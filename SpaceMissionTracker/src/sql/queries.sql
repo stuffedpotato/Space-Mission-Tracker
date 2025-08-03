@@ -33,7 +33,7 @@ manufacturer VARCHAR(30),
 sc_type VARCHAR(10), 
 crew_capacity INTEGER, 
 cargo_capacity_kg DECIMAL(8,2),
-PRIMARY KEY (manufacturer, model_name));
+PRIMARY KEY (model_name, manufacturer));
 
 -- If agency_id updated: need to update in ParticipateIn
 -- all agencies must have names but may not have acronyms, agency_id self-assigned to avoid duplication (mismatch names)
@@ -188,7 +188,7 @@ INSERT INTO Equipment (equipment_serial_num, equipment_name, eq_type) VALUES
 ('EQ001', 'Lunar Module Eagle', 'Lunar Lander');
 
 -- Insert values into LaunchSite
-INSERT INTO LaunchSite (site_id, site_name. site_city, site_country) VALUES 
+INSERT INTO LaunchSite (site_id, site_name, site_city, site_country) VALUES 
 ('LS001', 'Kennedy Space Center', 'Florida', 'USA');
 
 -- Insert values into CelestialBody
@@ -205,9 +205,9 @@ INSERT INTO Agency (agency_id, agency_name, acronym, agency_location, agency_cit
 
 -- Insert values into Astronaut
 INSERT INTO Astronaut (astronaut_id, astronaut_name, nationality, dob) VALUES 
-(1, 'Armstrong, Neil A.', 'US', '1930-08-05'),
-(2, 'Aldrin, Edwin “Buzz”', 'US', '1930-01-20'),
-(3, 'Collins, Michael', 'US', '1930-10-31');
+(1, 'Armstrong, Neil A.', 'US', TO_DATE('1930-08-05', 'YYYY-MM-DD')),
+(2, 'Aldrin, Edwin “Buzz”', 'US', TO_DATE('1930-01-20', 'YYYY-MM-DD')),
+(3, 'Collins, Michael', 'US', TO_DATE('1930-10-31', 'YYYY-MM-DD'));
 
 -- Insert values into TrainingProgram
 INSERT INTO TrainingProgram (program_name, program_location, tp_type) VALUES 
@@ -220,12 +220,12 @@ INSERT INTO Spacecraft (spacecraft_id, model_name, manufacturer) VALUES
 
 -- Insert values into Mission
 INSERT INTO Mission (mission_id, site_id, body_id, spacecraft_id, spacecraft_name, mission_name, start_date, end_date, launch_date) VALUES 
-('M001', 'LS001', 'CB001', 'SC001', 'Columbia', 'Apollo 11', '1969-07-16', '1969-07-24', '1969-07-16');
+('M001', 'LS001', 'CB001', 'SC001', 'Columbia', 'Apollo 11', TO_DATE('1969-07-16', 'YYYY-MM-DD'), TO_DATE('1969-07-24', 'YYYY-MM-DD'), TO_DATE('1969-07-16', 'YYYY-MM-DD'));
 
 -- Insert values into MissionLog
 INSERT INTO MissionLog (log_date, mission_id, entry_type, status, description) VALUES 
-('1969-07-16', 'M001', 'Launch', 'Success', 'Lift-off on Apollo 11'),
-('1969-07-20', 'M001', 'Landing', 'Success', 'The Eagle has landed');
+(TO_DATE('1969-07-16', 'YYYY-MM-DD'), 'M001', 'Launch', 'Success', 'Lift-off on Apollo 11'),
+(TO_DATE('1969-07-20', 'YYYY-MM-DD'), 'M001', 'Landing', 'Success', 'The Eagle has landed');
 
 -- Insert values into Carries
 INSERT INTO Carries (mission_id, equipment_serial_num) VALUES 
