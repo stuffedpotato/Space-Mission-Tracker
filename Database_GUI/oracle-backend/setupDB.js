@@ -16,17 +16,17 @@ const tableNames = [
 ];
 
 async function dropTables(conn) {
-  console.log("🗑️ Dropping existing tables...");
+  console.log("Dropping existing tables...");
   
   for (const tableName of tableNames) {
     try {
       await conn.execute(`DROP TABLE ${tableName} CASCADE CONSTRAINTS`);
-      console.log(`✅ Dropped ${tableName}`);
+      console.log(`Dropped ${tableName}`);
     } catch (err) {
       if (err.errorNum === 942) { // Table doesn't exist
-        console.log(`⚠️ ${tableName} (doesn't exist)`);
+        console.log(` ${tableName} (doesn't exist)`);
       } else {
-        console.log(`❌ Error dropping ${tableName}: ${err.message}`);
+        console.log(`Error dropping ${tableName}: ${err.message}`);
       }
     }
   }
@@ -38,7 +38,7 @@ async function setupDB() {
 
   try {
     conn = await oracledb.getConnection(dbConfig);
-    console.log("✅ Connected to database");
+    console.log("Connected to database");
 
     // Drop existing tables first
     await dropTables(conn);
@@ -48,18 +48,18 @@ async function setupDB() {
       .map(stmt => stmt.trim())
       .filter(stmt => stmt.length > 0);
 
-    console.log(`\n📋 Executing ${statements.length} SQL statements...`);
+    console.log(`\nExecuting ${statements.length} SQL statements...`);
 
     for (const stmt of statements) {
       await conn.execute(stmt);
-      console.log("✅");
+      console.log("check");
     }
 
     await conn.commit();
-    console.log("🎉 Database initialized successfully!");
+    console.log("Database initialized successfully!");
     
   } catch (err) {
-    console.error("❌ Setup failed:", err.message);
+    console.error("Setup failed:", err.message);
   } finally {
     if (conn) await conn.close();
   }

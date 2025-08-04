@@ -11,10 +11,10 @@ async function testDatabase() {
 
   try {
     conn = await oracledb.getConnection(dbConfig);
-    console.log("✅ Connected to database\n");
+    console.log("Connected to database\n");
 
     // Test 1: Check if all tables exist
-    console.log("📋 Checking tables...");
+    console.log("Checking tables...");
     const tablesResult = await conn.execute(`
       SELECT table_name FROM user_tables 
       ORDER BY table_name
@@ -24,7 +24,7 @@ async function testDatabase() {
     tablesResult.rows.forEach(row => console.log(`  - ${row[0]}`));
 
     // Test 2: Count records in each table
-    console.log("\n📊 Record counts:");
+    console.log("\nRecord counts:");
     const tables = ['EQUIPMENT', 'LAUNCHSITE', 'CELESTIALBODY', 'SPACECRAFTMODEL', 
                    'AGENCY', 'ASTRONAUT', 'TRAININGPROGRAM', 'SPACECRAFT', 
                    'MISSION', 'MISSIONLOG', 'CARRIES', 'PARTICIPATEIN', 
@@ -35,12 +35,12 @@ async function testDatabase() {
         const result = await conn.execute(`SELECT COUNT(*) FROM ${table}`);
         console.log(`  ${table}: ${result.rows[0][0]} records`);
       } catch (err) {
-        console.log(`  ${table}: ❌ Error - ${err.message}`);
+        console.log(`  ${table}: Error - ${err.message}`);
       }
     }
 
     // Test 3: Sample data query
-    console.log("\n🚀 Sample Mission Data:");
+    console.log("\nSample Mission Data:");
     const missionResult = await conn.execute(`
       SELECT m.mission_name, m.spacecraft_name, l.site_name, cb.name as destination
       FROM Mission m
@@ -58,7 +58,7 @@ async function testDatabase() {
     }
 
     // Test 4: Astronaut assignments
-    console.log("👨‍🚀 Astronaut Assignments:");
+    console.log("Astronaut Assignments:");
     const astronautResult = await conn.execute(`
       SELECT a.astronaut_name, m.mission_name
       FROM Astronaut a
@@ -71,10 +71,10 @@ async function testDatabase() {
       console.log(`  ${row[0]} → ${row[1]}`);
     });
 
-    console.log("\n🎉 Database test completed successfully!");
+    console.log("\nDatabase test completed successfully!");
 
   } catch (err) {
-    console.error("❌ Database test failed:", err.message);
+    console.error("Database test failed:", err.message);
   } finally {
     if (conn) await conn.close();
   }

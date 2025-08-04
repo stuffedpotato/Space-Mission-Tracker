@@ -31,7 +31,7 @@ app.get('/missions', async (req, res) => {
       JOIN CelestialBody cb ON m.body_id = cb.body_id
     `);
 
-    // Return raw rows array to match your frontend format
+    // Return raw rows array to match frontend format
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -161,7 +161,7 @@ app.delete('/mission-logs/:mission_id/:log_date', async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`🚀 Server running at http://localhost:${port}`);
+  console.log(`Server running at http://localhost:${port}`);
   console.log('Test endpoints:');
   console.log('  GET /test');
   console.log('  GET /missions');
