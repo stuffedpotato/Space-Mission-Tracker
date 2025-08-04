@@ -203,7 +203,7 @@ INSERT INTO SpacecraftModel (model_name, manufacturer, sc_type, crew_capacity, c
 INSERT INTO Agency (agency_id, agency_name, acronym, agency_location, agency_city, agency_country) VALUES 
 (1, 'National Aeronautics and Space Administration', 'NASA', '300 Hidden Figures Way SW', 'Washington', 'USA');
 
--- Insert values into Astronaut (split into individual statements)
+-- Insert values into Astronaut
 INSERT INTO Astronaut (astronaut_id, astronaut_name, nationality, dob) VALUES 
 (1, 'Armstrong, Neil A.', 'US', TO_DATE('1930-08-05', 'YYYY-MM-DD'));
 
@@ -213,7 +213,7 @@ INSERT INTO Astronaut (astronaut_id, astronaut_name, nationality, dob) VALUES
 INSERT INTO Astronaut (astronaut_id, astronaut_name, nationality, dob) VALUES 
 (3, 'Collins, Michael', 'US', TO_DATE('1930-10-31', 'YYYY-MM-DD'));
 
--- Insert values into TrainingProgram (split into individual statements)
+-- Insert values into TrainingProgram
 INSERT INTO TrainingProgram (program_name, program_location, tp_type) VALUES 
 ('Topography Recognition', 'Cinder Lake Crater Field, Arizona', 'Field');
 
@@ -228,7 +228,7 @@ INSERT INTO Spacecraft (spacecraft_id, model_name, manufacturer) VALUES
 INSERT INTO Mission (mission_id, site_id, body_id, spacecraft_id, spacecraft_name, mission_name, start_date, end_date, launch_date) VALUES 
 ('M001', 'LS001', 'CB001', 'SC001', 'Columbia', 'Apollo 11', TO_DATE('1969-07-16', 'YYYY-MM-DD'), TO_DATE('1969-07-24', 'YYYY-MM-DD'), TO_DATE('1969-07-16', 'YYYY-MM-DD'));
 
--- Insert values into MissionLog (split into individual statements)
+-- Insert values into MissionLog
 INSERT INTO MissionLog (log_date, mission_id, entry_type, status, description) VALUES 
 (TO_DATE('1969-07-16', 'YYYY-MM-DD'), 'M001', 'Launch', 'Success', 'Lift-off on Apollo 11');
 
@@ -247,7 +247,7 @@ INSERT INTO ParticipateIn (agency_id, mission_id, role) VALUES
 INSERT INTO Pilot (astronaut_id, flight_hours) VALUES 
 (1, 2400.00);
 
--- Insert values into AssignedTo (split into individual statements)
+-- Insert values into AssignedTo
 INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
 (1, 'M001');
 
@@ -257,7 +257,7 @@ INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES
 INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
 (3, 'M001');
 
--- Insert values into TrainedIn (split into individual statements)
+-- Insert values into TrainedIn
 INSERT INTO TrainedIn (astronaut_id, program_name, program_location) VALUES 
 (1, 'Topography Recognition', 'Cinder Lake Crater Field, Arizona');
 
