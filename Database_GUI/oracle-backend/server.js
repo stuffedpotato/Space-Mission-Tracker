@@ -91,6 +91,29 @@ app.get('/assignments', async (req, res) => {
   }
 });
 
+// Get mission logs
+app.get('/mission-logs', async (req, res) => {
+  let conn;
+  try {
+    conn = await oracledb.getConnection(dbConfig);
+    const result = await conn.execute(`
+      SELECT ml.mission_id, m.mission_name, 
+             TO_CHAR(ml.log_date, 'YYYY-MM-DD') as log_date,
+             ml.entry_type, ml.status, ml.description
+      FROM MissionLog ml
+      JOIN Mission m ON ml.mission_id = m.mission_id
+      ORDER BY ml.log_date, ml.mission_id
+    `);
+
+    // Return raw rows for consistency with other endpoints
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
 app.listen(port, () => {
   console.log(`🚀 Server running at http://localhost:${port}`);
   console.log('Test endpoints:');
@@ -98,4 +121,5 @@ app.listen(port, () => {
   console.log('  GET /missions');
   console.log('  GET /astronauts');
   console.log('  GET /assignments');
+  console.log('  GET /mission-logs');
 });

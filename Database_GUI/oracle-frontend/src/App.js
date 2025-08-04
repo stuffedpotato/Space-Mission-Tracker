@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import MissionTable from './MissionTable';
 import AstronautTable from './AstronautTable';
 import AssignmentTable from './AssignmentTable';
-//test
+import MissionLogTable from './MissionLogTable';
 
 function App() {
   const [activeTab, setActiveTab] = useState('missions');
@@ -62,6 +62,12 @@ function App() {
         >
           📋 Assignments
         </button>
+        <button 
+          style={activeTab === 'logs' ? activeTabStyle : tabStyle}
+          onClick={() => setActiveTab('logs')}
+        >
+          📝 Mission Logs
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -69,6 +75,7 @@ function App() {
         {activeTab === 'missions' && <MissionTable />}
         {activeTab === 'astronauts' && <AstronautTable />}
         {activeTab === 'assignments' && <AssignmentTable />}
+        {activeTab === 'logs' && <MissionLogTable />}
       </div>
     </div>
   );
