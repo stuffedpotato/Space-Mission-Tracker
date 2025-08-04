@@ -4,6 +4,8 @@ const oracledb = require('oracledb');
 const app = express();
 const port = 3001;
 
+app.use(express.json());
+
 const dbConfig = {
   user: 'system',
   password: 'oracle',
@@ -135,6 +137,50 @@ app.get('/mission-logs', async (req, res) => {
   }
 });
 
+app.post('/mission-logs', async (req, res) => {
+  let conn;
+  try {
+    const { mission_id, log_date, entry_type, status, description } = req.body;
+    conn = await oracledb.getConnection(dbConfig);
+    
+    await conn.execute(`
+      INSERT INTO MissionLog (mission_id, log_date, entry_type, status, description)
+      VALUES (:mission_id, TO_DATE(:log_date, 'YYYY-MM-DD'), :entry_type, :status, :description)
+    `, {
+      mission_id: mission_id,
+      log_date,
+      entry_type,
+      status,
+      description
+    }, { autoCommit: true });
+
+    res.json({ message: 'Success' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
+app.delete('/mission-logs/:mission_id/:log_date', async (req, res) => {
+  let conn;
+  try {
+    const { mission_id, log_date } = req.params;
+    conn = await oracledb.getConnection(dbConfig);
+    
+    await conn.execute(`
+      DELETE FROM MissionLog 
+      WHERE mission_id = :mission_id AND TO_CHAR(log_date, 'YYYY-MM-DD') = :log_date
+    `, { mission_id, log_date }, { autoCommit: true });
+
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
   console.log('Test endpoints:');
@@ -143,4 +189,6 @@ app.listen(port, () => {
   console.log('  GET /astronauts');
   console.log('  GET /assignments');
   console.log('  GET /mission-logs');
+  console.log('  POST /mission-logs');
+  console.log('  DELETE /mission-logs/:mission_id/:log_date');
 });
