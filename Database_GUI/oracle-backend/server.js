@@ -97,21 +97,34 @@ app.get('/assignments', async (req, res) => {
   }
 });
 
-// Get mission logs
+// Filter entries of MissionLog by mission_id per user specification, else gets all mission log entries
 app.get('/mission-logs', async (req, res) => {
+  const { mission_id } = req.query;
   let conn;
+
+  let whereClause = 'WHERE ml.mission_id = m.mission_id';
+  let binds = {};
+
+  // If mission_id is chosen, filter, else, all mission log entries are displayed
+  if (mission_id) {
+    whereClause = whereClause + ' AND ml.mission_id = :mission_id';
+    binds.mission_id = mission_id;
+  }
+
   try {
     conn = await oracledb.getConnection(dbConfig);
-    const result = await conn.execute(`
-      SELECT m.mission_id, m.mission_name, 
-             TO_CHAR(ml.log_date, 'YYYY-MM-DD') as log_date,
-             ml.entry_type, ml.status, ml.description
-      FROM MissionLog ml, Mission m
-      WHERE ml.mission_id = m.mission_id
-      ORDER BY ml.mission_id, ml.log_date
-    `);
 
-    // Return raw rows for consistency with other endpoints
+    const result = await conn.execute(`
+      SELECT ml.mission_id, m.mission_name,
+        TO_CHAR(ml.log_date, 'YYYY-MM-DD') as log_date,
+        ml.entry_type, ml.status, ml.description
+      FROM MissionLog ml, Mission m
+      ${whereClause}
+      ORDER BY ml.log_date
+    `, 
+      binds
+    );
+
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -120,6 +133,7 @@ app.get('/mission-logs', async (req, res) => {
   }
 });
 
+// Insert a mission
 app.post('/missions', async (req, res) => {
   let conn;
   try {
@@ -170,6 +184,7 @@ app.post('/missions', async (req, res) => {
   }
 });
 
+// Delete a mission
 app.delete('/missions/:mission_id', async (req, res) => {
   let conn;
   try {
@@ -189,6 +204,7 @@ app.delete('/missions/:mission_id', async (req, res) => {
   }
 });
 
+// Update a mission
 app.put('/missions/:mission_id', async (req, res) => {
   let conn;
   try {
@@ -344,7 +360,7 @@ async function errorCheck(conn, data) {
   return errors;
 }
 
-
+// Insert an entry into mission log
 app.post('/mission-logs', async (req, res) => {
   let conn;
   try {
@@ -376,6 +392,7 @@ app.post('/mission-logs', async (req, res) => {
   }
 });
 
+// Delete an entry of mission log
 app.delete('/mission-logs/:mission_id/:log_date', async (req, res) => {
   let conn;
   try {

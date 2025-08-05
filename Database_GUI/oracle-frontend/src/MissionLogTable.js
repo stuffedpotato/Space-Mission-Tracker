@@ -3,6 +3,7 @@ import axios from 'axios';
 
 function MissionLogTable() {
   const [missionLogs, setMissionLogs] = useState([]);
+  const [selectedMissionId, setSelectedMissionId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -16,7 +17,9 @@ function MissionLogTable() {
   const [inserting, setInserting] = useState(false);
 
   useEffect(() => {
-    axios.get('/mission-logs')
+    axios.get('/mission-logs', {
+      params: selectedMissionId ? { mission_id: selectedMissionId } : {}
+    })
       .then(res => {
         setMissionLogs(res.data);
         setLoading(false);
@@ -26,7 +29,7 @@ function MissionLogTable() {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [selectedMissionId]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -128,6 +131,16 @@ function MissionLogTable() {
           </button>
         </form>
       )}
+      
+      <div style={{ marginBottom: '10px' }}>
+        <input
+          type="text"
+          placeholder="Filter by Mission ID"
+          value={selectedMissionId}
+          onChange={(e) => setSelectedMissionId(e.target.value)}
+        />
+      </div>
+
       <table border="1" style={{borderCollapse: 'collapse', width: '100%'}}>
         <thead>
           <tr style={{backgroundColor: '#f0f0f0'}}>
