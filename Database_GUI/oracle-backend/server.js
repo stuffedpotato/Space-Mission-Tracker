@@ -203,9 +203,9 @@ app.put('/missions/:old_mission_id', async (req, res) => {
         spacecraft_id = :spacecraft_id,
         spacecraft_name = :spacecraft_name,
         mission_name = :mission_name,
-        start_date = :start_date,
-        end_date = :end_date,
-        launch_date = :launch_date
+        start_date = TO_DATE(:start_date, 'YYYY-MM-DD'),
+        end_date = TO_DATE(:end_date, 'YYYY-MM-DD'),
+        launch_date = TO_DATE(:launch_date, 'YYYY-MM-DD')
       WHERE mission_id = :old_mission_id
     `, {
       mission_id, 
@@ -218,7 +218,22 @@ app.put('/missions/:old_mission_id', async (req, res) => {
       end_date, 
       launch_date,
       old_mission_id
-    });
+    });    
+
+    // Update ParticipateIn if user changes it
+
+    if (agency_id) {
+      await conn.execute(`
+        UPDATE ParticipateIn
+        SET agency_id = :agency_id,
+          role = :role
+        WHERE mission_id = :old_mission_id
+        `, {
+        agency_id,
+        role,
+        old_mission_id
+      }); 
+    }
 
     await conn.commit();
     res.json({ message: 'Mission updated successfully' });
