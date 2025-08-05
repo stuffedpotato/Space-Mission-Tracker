@@ -6,6 +6,8 @@ function MissionTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     mission_id: '',
     mission_name: '',
@@ -19,26 +21,53 @@ function MissionTable() {
     agency_id: '',
     role: ''
   });
+  const [submitting, setSubmitting] = useState(false);
 
-  const [editingId, setEditingId] = useState(null);
-  const [inserting, setInserting] = useState(false);
+  const emptyFormData = {
+    mission_id: '',
+    mission_name: '',
+    spacecraft_name: '',
+    spacecraft_id: '',
+    site_id: '',
+    body_id: '',
+    start_date: '',
+    end_date: '',
+    launch_date: '',
+    agency_id: '',
+    role: ''
+  };
 
-  const startEdit = (row) => {
+  const handleShowAddForm = () => {
+    setFormData(emptyFormData);
+    setEditMode(false);
+    setEditingId(null);
+    setShowForm(true);
+  };
+
+  const handleShowEditForm = (row) => {
     setFormData({
       mission_id: row[0],
       mission_name: row[1],
       spacecraft_name: row[2],
+      spacecraft_id: '',
       site_id: '',
       body_id: '',
-      spacecraft_id: '',
       start_date: '',
       end_date: '',
       launch_date: row[7],
       agency_id: '',
       role: row[6]
     });
+    setEditMode(true);
     setEditingId(row[0]);
     setShowForm(true);
+  };
+
+  const handleCancelForm = () => {
+    setShowForm(false);
+    setEditMode(false);
+    setEditingId(null);
+    setFormData(emptyFormData);
   };
 
   useEffect(() => {
@@ -61,34 +90,28 @@ function MissionTable() {
     });
   };
 
-  const handleInsert = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setInserting(true);
+    setSubmitting(true);
+    
     try {
-      await axios.post('/missions', formData);
+      if (editMode) {
+        await axios.put(`/missions/${editingId}`, formData);
+      } else {
+        await axios.post('/missions', formData);
+      }
+      
       // Refresh the data
       const res = await axios.get('/missions');
       setMissions(res.data);
-      // Reset form
-      setFormData({
-        mission_id: '',
-        mission_name: '',
-        spacecraft_name: '',
-        spacecraft_id: '',
-        site_id: '',
-        body_id: '',
-        start_date: '',
-        end_date: '',
-        launch_date: '',
-        agency_id: '',
-        role: ''
-      });
-      setShowForm(false);
+      
+      // Reset form and close
+      handleCancelForm();
     } catch (err) {
-      console.error('Insert error:', err);
+      console.error('Submit error:', err);
       setError(err.response?.data?.error || err.message);
     } finally {
-      setInserting(false);
+      setSubmitting(false);
     }
   };
 
@@ -102,34 +125,6 @@ function MissionTable() {
     }
   };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.put(`/missions/${editingId}`, formData);
-      const res = await axios.get('/missions');
-      setMissions(res.data);
-      setFormData({
-        mission_id: '',
-        mission_name: '',
-        spacecraft_name: '',
-        spacecraft_id: '',
-        site_id: '',
-        body_id: '',
-        start_date: '',
-        end_date: '',
-        launch_date: '',
-        agency_id: '',
-        role: ''
-      });
-      setEditingId(null);
-      setShowForm(false);
-
-    } catch (err) {
-      setError(err.response?.data?.error || err.message);
-    }
-  };
-  
-
   if (loading) return <div>Loading missions...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -137,12 +132,12 @@ function MissionTable() {
     <div>
       <h2>🚀 Space Missions</h2>
 
-      <button onClick={() => setShowForm(!showForm)} style={{marginBottom: '10px'}}>
-        {showForm ? 'Cancel' : '+ Add Mission'}
+      <button onClick={handleShowAddForm} style={{marginBottom: '10px'}}>
+        + Add Mission
       </button>
 
       {showForm && (
-        <form onSubmit={editingId ? handleUpdate : handleInsert} style={{margin: '10px 0', padding: '10px', border: '1px solid #ccc'}}>
+        <form onSubmit={handleSubmit}>
           <input
             type="text"
             name="mission_id"
@@ -227,8 +222,11 @@ function MissionTable() {
             value={formData.role}
             onChange={handleInputChange}
           />
-          <button type="submit" disabled={inserting}>
-            {inserting ? 'Adding...' : 'Add'}
+          <button type="submit" disabled={submitting}>
+            {submitting ? (editMode ? 'Updating...' : 'Adding...') : (editMode ? 'Update' : 'Add')}
+          </button>
+          <button type="button" onClick={handleCancelForm}>
+            Cancel
           </button>
         </form>
       )}
@@ -244,8 +242,7 @@ function MissionTable() {
             <th style={{padding: '10px'}}>Agency Name</th>
             <th style={{padding: '10px'}}>Agency's Role</th>
             <th style={{padding: '10px'}}>Launch Date</th>
-            <th style={{padding: '10px'}}>Delete Action</th>
-            <th style={{padding: '10px'}}>Edit Action</th>
+            <th style={{padding: '10px'}}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -260,13 +257,11 @@ function MissionTable() {
               <td style={{padding: '8px'}}>{row[6]}</td>
               <td style={{padding: '8px'}}>{row[7]}</td>
               <td style={{padding: '8px'}}>
+                <button onClick={() => handleShowEditForm(row)} style={{marginBottom: '4px'}}>
+                  Edit
+                </button>
                 <button onClick={() => handleDelete(row[0])}>
                   Delete
-                </button>
-              </td>
-              <td style={{padding: '8px'}}>
-                <button onClick={() => startEdit(row)}>
-                  Edit
                 </button>
               </td>
             </tr>
