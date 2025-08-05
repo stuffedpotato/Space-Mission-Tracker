@@ -75,7 +75,7 @@ app.get('/assignments', async (req, res) => {
       SELECT a.astronaut_name, m.mission_name
       FROM Astronaut a, Mission m, AssignedTo at
       WHERE a.astronaut_id = at.astronaut_id AND at.mission_id = m.mission_id
-      ORDER BY a.astronaut_name
+      ORDER BY m.mission_id
     `);
 
     const assignments = result.rows.map(row => ({
@@ -102,7 +102,7 @@ app.get('/mission-logs', async (req, res) => {
              ml.entry_type, ml.status, ml.description
       FROM MissionLog ml, Mission m
       WHERE ml.mission_id = m.mission_id
-      ORDER BY ml.log_date, ml.mission_id
+      ORDER BY ml.mission_id, ml.log_date
     `);
 
     // Return raw rows for consistency with other endpoints
