@@ -9,9 +9,14 @@ function App() {
 
   const tableOptions = [
     { value: 'missions', label: 'Missions', component: <MissionTable /> },
+    { value: 'logs', label: 'Mission Logs', component: <MissionLogTable /> },
     { value: 'astronauts', label: 'Astronauts', component: <AstronautTable /> },
     { value: 'assignments', label: 'Assignments', component: <AssignmentTable /> },
-    { value: 'logs', label: 'Mission Logs', component: <MissionLogTable /> }
+    { value: 'agency', label: 'Agency', component: <MissionLogTable /> },
+    { value: 'launchsites', label: 'Launchsites', component: <MissionLogTable /> },
+    { value: 'celectialBodies', label: 'Celectial Body', component: <MissionLogTable /> },
+    { value: 'spacecraft', label: 'Spacecraft', component: <MissionLogTable /> },
+    { value: 'spacecraftModel', label: 'Spacecraft Model', component: <MissionLogTable /> }
   ];
 
   const containerStyle = {
