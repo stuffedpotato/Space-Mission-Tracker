@@ -21,13 +21,18 @@ app.get('/test', (req, res) => {
 app.get('/missions', async (req, res) => {
   let conn;
   try {
+    // Query modified to include missions where agency is NULL.
     conn = await oracledb.getConnection(dbConfig);
     const result = await conn.execute(`
       SELECT m.mission_id, m.mission_name, m.spacecraft_name, 
-             l.site_name, cb.name as destination, a.agency_id, p.role,
-             TO_CHAR(m.launch_date, 'YYYY-MM-DD') as launch_date
-      FROM Mission m, LaunchSite l, CelestialBody cb, ParticipateIn p, Agency a
-      WHERE m.site_id = l.site_id AND m.body_id = cb.body_id AND m.mission_id = p.mission_id AND p.agency_id = a.agency_id
+       l.site_name, cb.name AS destination,
+       a.agency_name, p.role,
+       TO_CHAR(m.launch_date, 'YYYY-MM-DD') AS launch_date
+       FROM Mission m
+       JOIN LaunchSite l ON m.site_id = l.site_id
+       JOIN CelestialBody cb ON m.body_id = cb.body_id
+       LEFT JOIN ParticipateIn p ON m.mission_id = p.mission_id
+       LEFT JOIN Agency a ON p.agency_id = a.agency_id
     `);
 
     // Return raw rows array to match frontend format
@@ -114,6 +119,73 @@ app.get('/mission-logs', async (req, res) => {
   }
 });
 
+app.post('/missions', async (req, res) => {
+  let conn;
+  try {
+    const { mission_id, mission_name, site_id, body_id, spacecraft_name, spacecraft_id, start_date, end_date, launch_date, agency_id, role } = req.body;
+    conn = await oracledb.getConnection(dbConfig);
+    
+    await conn.execute(`
+      INSERT INTO Mission (mission_id, site_id, body_id, spacecraft_id, spacecraft_name, mission_name, start_date, end_date, launch_date)
+      VALUES (:mission_id, :site_id, :body_id, :spacecraft_id, :spacecraft_name, :mission_name, TO_DATE(:start_date, 'YYYY-MM-DD'), TO_DATE(:end_date, 'YYYY-MM-DD'), TO_DATE(:launch_date, 'YYYY-MM-DD'))
+    `, {
+      mission_id,
+      site_id,
+      body_id,
+      spacecraft_id,
+      spacecraft_name,
+      mission_name,
+      start_date: start_date || NULL,
+      end_date: end_date || NULL,
+      launch_date
+    }, { autoCommit: true });
+
+    // Also must insert into ParticipateIn if agency_id and role is provided
+
+    if (agency_id && role) {
+      await conn.execute(`
+        INSERT INTO ParticipateIn (agency_id, mission_id, role)
+        VALUES (:agency_id, :mission_id, :role)
+        `, {
+          agency_id,
+          mission_id,
+          role
+        }, { autoCommit: true });
+    }
+
+    res.json({ message: 'Success' });
+  } catch (err) {
+    if (err.errorNum === 2291) { 
+      res.status(400).json({
+        error: 'One or more of the dependent parameters do not exist: LaunchSite, CelestialBody, Spacecraft. Please ensure they exist before inserting this Mission.'
+      })
+    } else {
+      res.status(500).json({ error: err.message });
+    }
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
+app.delete('/mission-logs/:mission_id/:log_date', async (req, res) => {
+  let conn;
+  try {
+    const { mission_id, log_date } = req.params;
+    conn = await oracledb.getConnection(dbConfig);
+    
+    await conn.execute(`
+      DELETE FROM MissionLog 
+      WHERE mission_id = :mission_id AND TO_CHAR(log_date, 'YYYY-MM-DD') = :log_date
+    `, { mission_id, log_date }, { autoCommit: true });
+
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
 app.post('/mission-logs', async (req, res) => {
   let conn;
   try {
@@ -133,7 +205,13 @@ app.post('/mission-logs', async (req, res) => {
 
     res.json({ message: 'Success' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    if (err.errorNum === 2291) { 
+      res.status(400).json({
+        error: 'Mission ID does not exist. Please create this Mission first.'
+      })
+    } else {
+      res.status(500).json({ error: err.message });
+    }
   } finally {
     if (conn) await conn.close();
   }
