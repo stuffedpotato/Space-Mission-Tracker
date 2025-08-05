@@ -72,6 +72,16 @@ function MissionTable() {
     }
   };
 
+  const handleDelete = async (missionId) => {
+    try {
+      await axios.delete(`/missions/${missionId}`);
+      const res = await axios.get('/missions');
+      setMissions(res.data);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   if (loading) return <div>Loading missions...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -196,6 +206,11 @@ function MissionTable() {
               <td style={{padding: '8px'}}>{row[5]}</td>
               <td style={{padding: '8px'}}>{row[6]}</td>
               <td style={{padding: '8px'}}>{row[7]}</td>
+              <td style={{padding: '8px'}}>
+                <button onClick={() => handleDelete(row[0])}>
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

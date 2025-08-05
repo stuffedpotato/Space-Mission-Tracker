@@ -167,16 +167,16 @@ app.post('/missions', async (req, res) => {
   }
 });
 
-app.delete('/mission-logs/:mission_id/:log_date', async (req, res) => {
+app.delete('/missions/:mission_id', async (req, res) => {
   let conn;
   try {
-    const { mission_id, log_date } = req.params;
+    const { mission_id } = req.params;
     conn = await oracledb.getConnection(dbConfig);
     
     await conn.execute(`
-      DELETE FROM MissionLog 
-      WHERE mission_id = :mission_id AND TO_CHAR(log_date, 'YYYY-MM-DD') = :log_date
-    `, { mission_id, log_date }, { autoCommit: true });
+      DELETE FROM Mission 
+      WHERE mission_id = :mission_id
+    `, { mission_id }, { autoCommit: true });
 
     res.json({ message: 'Deleted' });
   } catch (err) {
