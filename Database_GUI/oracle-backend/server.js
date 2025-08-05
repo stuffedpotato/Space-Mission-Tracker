@@ -157,9 +157,11 @@ app.post('/missions', async (req, res) => {
     res.json({ message: 'Success' });
   } catch (err) {
     if (err.errorNum === 2291) { 
+      const errors = await errorCheck(conn, req.body);
       res.status(400).json({
-        error: 'One or more of the dependent parameters do not exist: LaunchSite, CelestialBody, Spacecraft. Please ensure they exist before inserting this Mission.'
-      })
+        error: 'FAILURE: Invalid foreign key references.',
+        details: errors
+      });
     } else {
       res.status(500).json({ error: err.message });
     }
@@ -214,7 +216,7 @@ app.put('/missions/:mission_id', async (req, res) => {
       mission_id
     });    
 
-    // Update ParticipateIn if user changes it
+    // Update ParticipateIn
 
     if (agency_id && role) {
 
@@ -243,7 +245,7 @@ app.put('/missions/:mission_id', async (req, res) => {
           mission_id
         });
       } else {
-        // Insert new
+        // Insert new if does not exist already
         await conn.execute(`
           INSERT INTO ParticipateIn (agency_id, mission_id, role)
           VALUES (:agency_id, :mission_id, :role)
@@ -267,11 +269,80 @@ app.put('/missions/:mission_id', async (req, res) => {
     res.json({ message: 'Mission updated successfully' });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    if (err.errorNum === 2291) { 
+      const errors = await errorCheck(conn, req.body);
+      res.status(400).json({
+        error: 'FAILURE: Invalid foreign key references.',
+        details: errors
+      });
+    } else {
+      res.status(500).json({ error: err.message });
+    }
   } finally {
     if (conn) await conn.close();
   }
 });
+
+// Error handling - finding out which foreign key reference is giving the error.
+async function errorCheck(conn, data) {
+  const errors = [];
+
+  // Check Launch Site ID
+  let result = await conn.execute(`
+    SELECT COUNT(*) 
+    FROM LaunchSite 
+    WHERE site_id = :site_id
+    `, { 
+      site_id: data.site_id 
+    }
+  );
+  if (result.rows[0][0] === 0) {
+    errors.push(`Launch Site ID "${data.site_id}" does not exist`);
+  }
+
+  // Check Spacecraft ID
+  result = await conn.execute(`
+    SELECT COUNT(*) 
+    FROM Spacecraft 
+    WHERE spacecraft_id = :spacecraft_id
+    `, { 
+      spacecraft_id: data.spacecraft_id
+    }
+  );
+  if (result.rows[0][0] === 0) {
+    errors.push(`Spacecraft ID "${data.spacecraft_id}" does not exist`);
+  }
+
+  // Check Celestial Body ID
+  result = await conn.execute(`
+    SELECT COUNT(*) 
+    FROM CelestialBody 
+    WHERE body_id = :body_id
+    `, { 
+      body_id: data.body_id
+    }
+  );
+  if (result.rows[0][0] === 0) {
+    errors.push(`Celestial Body ID "${data.body_id}" does not exist`);
+  }
+
+  // Check Agency ID if user entered it
+  if (data.agency_id) {
+    result = await conn.execute(`
+      SELECT COUNT(*) 
+      FROM Agency 
+      WHERE agency_id = :agency_id
+      `, { 
+        agency_id: data.agency_id
+      }
+    );
+    if (result.rows[0][0] === 0) {
+      errors.push(`Agency ID "${data.agency_id}" does not exist`);
+    }
+  }
+
+  return errors;
+}
 
 
 app.post('/mission-logs', async (req, res) => {

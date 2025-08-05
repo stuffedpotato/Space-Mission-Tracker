@@ -109,7 +109,12 @@ function MissionTable() {
       handleCancelForm();
     } catch (err) {
       console.error('Submit error:', err);
-      setError(err.response?.data?.error || err.message);
+    
+      if (err.response?.data) {
+        setError(err.response.data);
+      } else {
+        setError({ error: err.message });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -125,8 +130,16 @@ function MissionTable() {
     }
   };
 
-  if (loading) return <div>Loading missions...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) 
+    return <div>Loading missions...</div>;
+  if (error) {
+    return (
+      <pre style={{ color: 'red', whiteSpace: 'pre-wrap' }}>
+        {JSON.stringify(error, null, 2)}
+      </pre>
+    );
+  }
+  
 
   return (
     <div>
