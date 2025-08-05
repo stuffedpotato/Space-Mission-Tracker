@@ -19,7 +19,27 @@ function MissionTable() {
     agency_id: '',
     role: ''
   });
+
+  const [editingId, setEditingId] = useState(null);
   const [inserting, setInserting] = useState(false);
+
+  const startEdit = (row) => {
+    setFormData({
+      mission_id: row[0],
+      mission_name: row[1],
+      spacecraft_name: row[2],
+      site_id: '',
+      body_id: '',
+      spacecraft_id: '',
+      start_date: '',
+      end_date: '',
+      launch_date: row[7],
+      agency_id: '',
+      role: row[6]
+    });
+    setEditingId(row[0]);
+    setShowForm(true);
+  };
 
   useEffect(() => {
     axios.get('/missions')
@@ -82,6 +102,34 @@ function MissionTable() {
     }
   };
 
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`/missions/${editingId}`, formData);
+      const res = await axios.get('/missions');
+      setMissions(res.data);
+      setFormData({
+        mission_id: '',
+        mission_name: '',
+        spacecraft_name: '',
+        spacecraft_id: '',
+        site_id: '',
+        body_id: '',
+        start_date: '',
+        end_date: '',
+        launch_date: '',
+        agency_id: '',
+        role: ''
+      });
+      setEditingId(null);
+      setShowForm(false);
+
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
+    }
+  };
+  
+
   if (loading) return <div>Loading missions...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -94,7 +142,7 @@ function MissionTable() {
       </button>
 
       {showForm && (
-        <form onSubmit={handleInsert} style={{margin: '10px 0', padding: '10px', border: '1px solid #ccc'}}>
+        <form onSubmit={editingId ? handleUpdate : handleInsert} style={{margin: '10px 0', padding: '10px', border: '1px solid #ccc'}}>
           <input
             type="text"
             name="mission_id"
@@ -147,6 +195,7 @@ function MissionTable() {
             placeholder="Start Date"
             value={formData.start_date}
             onChange={handleInputChange}
+            required
           />
           <input
             type="date"
@@ -154,6 +203,7 @@ function MissionTable() {
             placeholder="End Date"
             value={formData.end_date}
             onChange={handleInputChange}
+            required
           />
           <input
             type="date"
@@ -161,6 +211,7 @@ function MissionTable() {
             placeholder="Launch Date"
             value={formData.launch_date}
             onChange={handleInputChange}
+            required
           />
           <input
             type="text"
@@ -193,6 +244,8 @@ function MissionTable() {
             <th style={{padding: '10px'}}>Agency Name</th>
             <th style={{padding: '10px'}}>Agency's Role</th>
             <th style={{padding: '10px'}}>Launch Date</th>
+            <th style={{padding: '10px'}}>Delete Action</th>
+            <th style={{padding: '10px'}}>Edit Action</th>
           </tr>
         </thead>
         <tbody>
@@ -209,6 +262,11 @@ function MissionTable() {
               <td style={{padding: '8px'}}>
                 <button onClick={() => handleDelete(row[0])}>
                   Delete
+                </button>
+              </td>
+              <td style={{padding: '8px'}}>
+                <button onClick={() => startEdit(row)}>
+                  Edit
                 </button>
               </td>
             </tr>

@@ -33,6 +33,7 @@ app.get('/missions', async (req, res) => {
        JOIN CelestialBody cb ON m.body_id = cb.body_id
        LEFT JOIN ParticipateIn p ON m.mission_id = p.mission_id
        LEFT JOIN Agency a ON p.agency_id = a.agency_id
+       ORDER BY m.mission_id
     `);
 
     // Return raw rows array to match frontend format
@@ -185,6 +186,50 @@ app.delete('/missions/:mission_id', async (req, res) => {
     if (conn) await conn.close();
   }
 });
+
+app.put('/missions/:old_mission_id', async (req, res) => {
+  let conn;
+  try {
+    const { old_mission_id } = req.params;
+    const { mission_id, mission_name, site_id, body_id, spacecraft_name, spacecraft_id, start_date, end_date, launch_date, agency_id, role } = req.body;
+    conn = await oracledb.getConnection(dbConfig);
+
+    // Update Mission table
+    await conn.execute(`
+      UPDATE Mission
+      SET mission_id = :mission_id,
+        site_id = :site_id,
+        body_id = :body_id,
+        spacecraft_id = :spacecraft_id,
+        spacecraft_name = :spacecraft_name,
+        mission_name = :mission_name,
+        start_date = :start_date,
+        end_date = :end_date,
+        launch_date = :launch_date
+      WHERE mission_id = :old_mission_id
+    `, {
+      mission_id, 
+      site_id, 
+      body_id, 
+      spacecraft_id, 
+      spacecraft_name,
+      mission_name, 
+      start_date, 
+      end_date, 
+      launch_date,
+      old_mission_id
+    });
+
+    await conn.commit();
+    res.json({ message: 'Mission updated successfully' });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
 
 app.post('/mission-logs', async (req, res) => {
   let conn;
