@@ -5,77 +5,66 @@ import AssignmentTable from './AssignmentTable';
 import MissionLogTable from './MissionLogTable';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('missions');
+  const [activeTable, setActiveTable] = useState('missions');
 
-  const tabStyle = {
-    padding: '10px 20px',
-    margin: '0 5px',
-    border: '1px solid #ccc',
-    backgroundColor: '#f0f0f0',
-    cursor: 'pointer',
-    borderRadius: '5px 5px 0 0'
-  };
-
-  const activeTabStyle = {
-    ...tabStyle,
-    backgroundColor: '#007acc',
-    color: 'white'
-  };
+  const tableOptions = [
+    { value: 'missions', label: 'Missions', component: <MissionTable /> },
+    { value: 'astronauts', label: 'Astronauts', component: <AstronautTable /> },
+    { value: 'assignments', label: 'Assignments', component: <AssignmentTable /> },
+    { value: 'logs', label: 'Mission Logs', component: <MissionLogTable /> }
+  ];
 
   const containerStyle = {
-    fontFamily: 'Arial, sans-serif',
     maxWidth: '1200px',
     margin: '0 auto',
     padding: '20px'
   };
 
-  const tabContentStyle = {
+  const dropdownStyle = {
+    fontSize: '16px',
+    borderRadius: '8px',
+    backgroundColor: 'white',
+    cursor: 'pointer',
+    minWidth: '200px',
+    marginBottom: '20px'
+  };
+
+  const contentStyle = {
     border: '1px solid #ccc',
     padding: '20px',
-    marginTop: '-1px',
-    borderRadius: '0 5px 5px 5px'
+    borderRadius: '8px',
+    backgroundColor: '#fafafa'
   };
+
+  const currentTable = tableOptions.find(option => option.value === activeTable);
 
   return (
     <div style={containerStyle}>
       <h1 style={{textAlign: 'center', color: '#333', marginBottom: '30px'}}>
-        🚀 Space Mission Dashboard
+        Space Mission Dashboard
       </h1>
       
-      {/* Tab Navigation */}
-      <div style={{marginBottom: '0'}}>
-        <button 
-          style={activeTab === 'missions' ? activeTabStyle : tabStyle}
-          onClick={() => setActiveTab('missions')}
+      {/* Dropdown Selection */}
+      <div style={{marginBottom: '10px'}}>
+        <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#333'}}>
+          Select Table:
+        </label>
+        <select 
+          style={dropdownStyle}
+          value={activeTable}
+          onChange={(e) => setActiveTable(e.target.value)}
         >
-          🚀 Missions
-        </button>
-        <button 
-          style={activeTab === 'astronauts' ? activeTabStyle : tabStyle}
-          onClick={() => setActiveTab('astronauts')}
-        >
-          👨‍🚀 Astronauts
-        </button>
-        <button 
-          style={activeTab === 'assignments' ? activeTabStyle : tabStyle}
-          onClick={() => setActiveTab('assignments')}
-        >
-          📋 Assignments
-        </button>
-        <button 
-          style={activeTab === 'logs' ? activeTabStyle : tabStyle}
-          onClick={() => setActiveTab('logs')}
-        >
-          📝 Mission Logs
-        </button>
+          {tableOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Tab Content */}
-      <div style={tabContentStyle}>
-        {activeTab === 'missions' && <MissionTable />}
-        {activeTab === 'astronauts' && <AstronautTable />}
-        {activeTab === 'assignments' && <AssignmentTable />}
-        {activeTab === 'logs' && <MissionLogTable />}
+      {/* Table Content */}
+      <div style={contentStyle}>
+        {currentTable && currentTable.component}
       </div>
     </div>
   );

@@ -137,7 +137,7 @@ function MissionTable() {
     <div>
       <h2>🚀 Space Missions</h2>
 
-      <button onClick={() => setShowForm(!showForm)}>
+      <button onClick={() => setShowForm(!showForm)} style={{marginBottom: '10px'}}>
         {showForm ? 'Cancel' : '+ Add Mission'}
       </button>
 

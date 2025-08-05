@@ -78,7 +78,7 @@ function MissionLogTable() {
     <div>
       <h2>📝 Mission Logs</h2>
       
-      <button onClick={() => setShowForm(!showForm)}>
+      <button onClick={() => setShowForm(!showForm)} style={{marginBottom: '10px'}}>
         {showForm ? 'Cancel' : '+ Add Log'}
       </button>
 
