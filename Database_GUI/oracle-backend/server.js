@@ -29,14 +29,6 @@ app.get('/missions', async (req, res) => {
       FROM Mission m, LaunchSite l, CelestialBody cb, ParticipateIn p, Agency a
       WHERE m.site_id = l.site_id AND m.body_id = cb.body_id AND m.mission_id = p.mission_id AND p.agency_id = a.agency_id
     `);
-    // const result = await conn.execute(`
-    //   SELECT m.mission_id, m.mission_name, m.spacecraft_name, 
-    //          l.site_name, cb.name as destination,
-    //          TO_CHAR(m.launch_date, 'YYYY-MM-DD') as launch_date
-    //   FROM Mission m
-    //   JOIN LaunchSite l ON m.site_id = l.site_id
-    //   JOIN CelestialBody cb ON m.body_id = cb.body_id
-    // `);
 
     // Return raw rows array to match frontend format
     res.json(result.rows);
@@ -56,7 +48,7 @@ app.get('/astronauts', async (req, res) => {
       SELECT astronaut_id, astronaut_name, nationality, 
              TO_CHAR(dob, 'YYYY-MM-DD') as date_of_birth
       FROM Astronaut
-      ORDER BY astronaut_name
+      ORDER BY astronaut_id
     `);
 
     const astronauts = result.rows.map(row => ({
@@ -83,15 +75,8 @@ app.get('/assignments', async (req, res) => {
       SELECT a.astronaut_name, m.mission_name
       FROM Astronaut a, Mission m, AssignedTo at
       WHERE a.astronaut_id = at.astronaut_id AND at.mission_id = m.mission_id
-      ORDER BY a.astronaut_name
+      ORDER BY m.mission_id
     `);
-    // const result = await conn.execute(`
-    //   SELECT a.astronaut_name, m.mission_name
-    //   FROM Astronaut a
-    //   JOIN AssignedTo at ON a.astronaut_id = at.astronaut_id
-    //   JOIN Mission m ON at.mission_id = m.mission_id
-    //   ORDER BY a.astronaut_name
-    // `);
 
     const assignments = result.rows.map(row => ({
       astronaut: row[0],
@@ -117,16 +102,8 @@ app.get('/mission-logs', async (req, res) => {
              ml.entry_type, ml.status, ml.description
       FROM MissionLog ml, Mission m
       WHERE ml.mission_id = m.mission_id
-      ORDER BY ml.log_date, ml.mission_id
+      ORDER BY ml.mission_id, ml.log_date
     `);
-    // const result = await conn.execute(`
-    //   SELECT ml.mission_id, m.mission_name, 
-    //          TO_CHAR(ml.log_date, 'YYYY-MM-DD') as log_date,
-    //          ml.entry_type, ml.status, ml.description
-    //   FROM MissionLog ml
-    //   JOIN Mission m ON ml.mission_id = m.mission_id
-    //   ORDER BY ml.log_date, ml.mission_id
-    // `);
 
     // Return raw rows for consistency with other endpoints
     res.json(result.rows);
