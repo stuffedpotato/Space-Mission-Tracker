@@ -187,52 +187,80 @@ app.delete('/missions/:mission_id', async (req, res) => {
   }
 });
 
-app.put('/missions/:old_mission_id', async (req, res) => {
+app.put('/missions/:mission_id', async (req, res) => {
   let conn;
   try {
-    const { old_mission_id } = req.params;
-    const { mission_id, mission_name, site_id, body_id, spacecraft_name, spacecraft_id, start_date, end_date, launch_date, agency_id, role } = req.body;
+    const { mission_id } = req.params;
+    const { mission_name, site_id, body_id, spacecraft_name, spacecraft_id, launch_date, agency_id, role } = req.body;
     conn = await oracledb.getConnection(dbConfig);
 
     // Update Mission table
     await conn.execute(`
       UPDATE Mission
-      SET mission_id = :mission_id,
-        site_id = :site_id,
+      SET site_id = :site_id,
         body_id = :body_id,
         spacecraft_id = :spacecraft_id,
         spacecraft_name = :spacecraft_name,
         mission_name = :mission_name,
-        start_date = TO_DATE(:start_date, 'YYYY-MM-DD'),
-        end_date = TO_DATE(:end_date, 'YYYY-MM-DD'),
         launch_date = TO_DATE(:launch_date, 'YYYY-MM-DD')
-      WHERE mission_id = :old_mission_id
+      WHERE mission_id = :mission_id
     `, {
-      mission_id, 
       site_id, 
       body_id, 
       spacecraft_id, 
       spacecraft_name,
-      mission_name, 
-      start_date, 
-      end_date, 
+      mission_name,
       launch_date,
-      old_mission_id
+      mission_id
     });    
 
     // Update ParticipateIn if user changes it
 
-    if (agency_id) {
-      await conn.execute(`
-        UPDATE ParticipateIn
-        SET agency_id = :agency_id,
-          role = :role
-        WHERE mission_id = :old_mission_id
+    if (agency_id && role) {
+
+      // Check if a record exists already in ParticipateIn for this mission
+      const result = await conn.execute(`
+        SELECT COUNT(*) AS count 
+        FROM ParticipateIn 
+        WHERE mission_id = :mission_id
+      `, { 
+        mission_id 
+      });
+    
+      const exists = result.rows[0][0] > 0;
+    
+      if (exists) {
+        // Update existing
+        await conn.execute(`
+          UPDATE ParticipateIn
+          SET agency_id = :agency_id,
+              role = :role
+          WHERE mission_id = :mission_id
+          AND role = :role
         `, {
-        agency_id,
-        role,
-        old_mission_id
-      }); 
+          agency_id,
+          role,
+          mission_id
+        });
+      } else {
+        // Insert new
+        await conn.execute(`
+          INSERT INTO ParticipateIn (agency_id, mission_id, role)
+          VALUES (:agency_id, :mission_id, :role)
+        `, {
+          agency_id,
+          mission_id,
+          role
+        });
+      }
+    } else {
+      // Delete if a tuple already exists in ParticipateIn but now user is removing the attached agency
+      await conn.execute(`
+        DELETE FROM ParticipateIn
+        WHERE mission_id = :mission_id
+      `, { 
+        mission_id,
+      });
     }
 
     await conn.commit();

@@ -52,11 +52,11 @@ function MissionTable() {
       spacecraft_id: '',
       site_id: '',
       body_id: '',
-      start_date: '',
-      end_date: '',
+      // start_date: '',
+      // end_date: '',
       launch_date: row[7],
-      agency_id: '',
-      role: row[6]
+      // agency_id: '',
+      // role: row[6]
     });
     setEditMode(true);
     setEditingId(row[0]);
@@ -138,14 +138,22 @@ function MissionTable() {
 
       {showForm && (
         <form onSubmit={handleSubmit}>
-          <input
+          {editMode ? (
+            <input
+              type="text"
+              value={formData.mission_id}
+              disabled
+              style={{ backgroundColor: '#f0f0f0' }}
+            />
+          ): 
+          (<input
             type="text"
             name="mission_id"
             placeholder="Mission ID"
             value={formData.mission_id}
             onChange={handleInputChange}
             required
-          />
+          />)}
           <input
             type="text"
             name="mission_name"
@@ -184,22 +192,38 @@ function MissionTable() {
             value={formData.spacecraft_name}
             onChange={handleInputChange}
           />
-          <input
+          {editMode ? (
+            <input
+              type="date"
+              value={formData.start_date}
+              disabled
+              style={{ backgroundColor: '#f0f0f0' }}
+            />
+          ): 
+          (<input
             type="date"
             name="start_date"
             placeholder="Start Date"
             value={formData.start_date}
             onChange={handleInputChange}
             required
-          />
-          <input
+          />)}
+          {editMode ? (
+            <input
+              type="date"
+              value={formData.end_date}
+              disabled
+              style={{ backgroundColor: '#f0f0f0' }}
+            />
+          ): 
+          (<input
             type="date"
             name="end_date"
             placeholder="End Date"
             value={formData.end_date}
             onChange={handleInputChange}
             required
-          />
+          />)}
           <input
             type="date"
             name="launch_date"
