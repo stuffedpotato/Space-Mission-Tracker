@@ -242,6 +242,15 @@ INSERT INTO Agency (agency_id, agency_name, acronym, agency_location, agency_cit
 INSERT INTO Agency (agency_id, agency_name, acronym, agency_location, agency_city, agency_country) VALUES 
 (2, 'European Space Agency', 'ESA', '8-10 rue Mario Nikis', 'Paris', 'France');
 
+INSERT INTO Agency (agency_id, agency_name, acronym, agency_location, agency_city, agency_country) VALUES 
+(3, 'Canadian Space Agency', 'CSA', '6767 Rte de lAéroport', 'Saint-Hubert, QC', 'Canada');
+
+INSERT INTO Agency (agency_id, agency_name, acronym, agency_location, agency_city, agency_country) VALUES 
+(4, 'Indian Space Research Organization', 'ISRO', 'Antariksh Bhavan, New BEL Road', 'Bangalore', 'India');
+
+INSERT INTO Agency (agency_id, agency_name, acronym, agency_location, agency_city, agency_country) VALUES 
+(5, 'German Aerospace Center', 'DLR', 'Rutherfordstraße 2', 'Berlin', 'Germany');
+
 -- Insert values into Astronaut
 INSERT INTO Astronaut (astronaut_id, astronaut_name, nationality, dob) VALUES 
 (1, 'Armstrong, Neil A.', 'US', TO_DATE('1930-08-05', 'YYYY-MM-DD'));
