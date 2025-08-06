@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import MissionTable from './MissionTable';
-import AstronautTable from './AstronautTable';
+import { useState } from 'react';
 import AssignmentTable from './AssignmentTable';
+import AstronautTable from './AstronautTable';
+import CelestialBodyTable from './CelestialBodyTable';
 import MissionLogTable from './MissionLogTable';
+import MissionTable from './MissionTable';
+console.log('AstronautTable:', AstronautTable);
+console.log('CelestialBodyTable:', CelestialBodyTable);
 
 function App() {
   const [activeTable, setActiveTable] = useState('missions');
@@ -14,7 +17,7 @@ function App() {
     { value: 'assignments', label: 'Assignments', component: <AssignmentTable /> },
     { value: 'agency', label: 'Agency', component: <MissionLogTable /> },
     { value: 'launchsites', label: 'Launchsites', component: <MissionLogTable /> },
-    { value: 'celectialBodies', label: 'Celectial Body', component: <MissionLogTable /> },
+    { value: 'celestialBodies', label: 'Celestial Body', component: <CelestialBodyTable /> },
     { value: 'spacecraft', label: 'Spacecraft', component: <MissionLogTable /> },
     { value: 'spacecraftModel', label: 'Spacecraft Model', component: <MissionLogTable /> }
   ];

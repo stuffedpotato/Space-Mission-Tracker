@@ -72,6 +72,36 @@ app.get('/astronauts', async (req, res) => {
   }
 });
 
+// Get celestial bodies
+app.get('/celestial-bodies', async (req, res) => {
+  let conn;
+
+  try {
+    conn = await oracledb.getConnection(dbConfig);
+
+    const result = await conn.execute(
+      `SELECT body_id, name, cb_type, has_atmosphere 
+      FROM CelestialBody
+      ORDER BY body_id`
+    );
+
+    
+    const bodies = result.rows.map(row => ({
+      body_id: row[0],
+      name: row[1],
+      cb_type: row[2],
+      has_atmosphere: row[3]
+    }));
+
+    res.json(bodies);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
+
 // Get mission assignments
 app.get('/assignments', async (req, res) => {
   let conn;
@@ -305,5 +335,6 @@ app.listen(port, () => {
   console.log('  GET /assignments');
   console.log('  GET /mission-logs');
   console.log('  POST /mission-logs');
+  console.log('  GET /celestial-bodies');  
   console.log('  DELETE /mission-logs/:mission_id/:log_date');
 });
