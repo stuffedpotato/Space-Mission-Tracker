@@ -36,8 +36,13 @@ app.get('/missions', async (req, res) => {
        ORDER BY m.mission_id
     `);
 
+    const columns = [
+      'MISSION_ID', 'MISSION_NAME', 'SPACECRAFT_NAME',
+      'SITE_NAME', 'DESTINATION', 'AGENCY_NAME', 'ROLE', 'LAUNCH_DATE'
+    ];
+
     // Return raw rows array to match frontend format
-    res.json(result.rows);
+    res.json({columns, rows: result.rows});
   } catch (err) {
     res.status(500).json({ error: err.message });
   } finally {
@@ -194,7 +199,9 @@ app.delete('/missions/:mission_id', async (req, res) => {
     await conn.execute(`
       DELETE FROM Mission 
       WHERE mission_id = :mission_id
-    `, { mission_id }, { autoCommit: true });
+    `, { 
+      mission_id 
+    }, { autoCommit: true });
 
     res.json({ message: 'Deleted' });
   } catch (err) {

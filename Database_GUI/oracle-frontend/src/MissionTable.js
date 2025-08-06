@@ -3,6 +3,8 @@ import axios from 'axios';
 
 function MissionTable() {
   const [missions, setMissions] = useState([]);
+  const [columns, setColumns] = useState([]);
+  const [selectedCols, setSelectedCols] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -73,7 +75,9 @@ function MissionTable() {
   useEffect(() => {
     axios.get('/missions')
       .then(res => {
-        setMissions(res.data);
+        setColumns(res.data.columns);
+        setSelectedCols(res.data.columns);
+        setMissions(res.data.rows);
         setLoading(false);
       })
       .catch(err => {
@@ -82,6 +86,7 @@ function MissionTable() {
         setLoading(false);
       });
   }, []);
+  
 
   const handleInputChange = (e) => {
     setFormData({
@@ -268,31 +273,50 @@ function MissionTable() {
         </form>
       )}
 
+      <div style={{ marginBottom: '10px' }}>
+        {columns.map(col => (
+          <label key={col} style={{ marginRight: '10px' }}>
+            <input
+              type="checkbox"
+              checked={selectedCols.includes(col)}
+              onChange={() => {
+                if (selectedCols.includes(col)) {
+                  setSelectedCols(prev => prev.filter(c => c !== col));
+                } else {
+                  setSelectedCols(prev => [...prev, col]);
+                }
+              }}
+            />
+            {col}
+          </label>
+        ))}
+      </div>
+
       <table border="1" style={{borderCollapse: 'collapse', width: '100%'}}>
         <thead>
           <tr style={{backgroundColor: '#f0f0f0'}}>
-            <th style={{padding: '10px'}}>Mission ID</th>
-            <th style={{padding: '10px'}}>Mission Name</th>
-            <th style={{padding: '10px'}}>Spacecraft</th>
-            <th style={{padding: '10px'}}>Launch Site</th>
-            <th style={{padding: '10px'}}>Destination</th>
-            <th style={{padding: '10px'}}>Agency Name</th>
-            <th style={{padding: '10px'}}>Agency's Role</th>
-            <th style={{padding: '10px'}}>Launch Date</th>
+            {selectedCols.includes('MISSION_ID') && <th style={{padding: '10px'}}>Mission ID</th>}
+            {selectedCols.includes('MISSION_NAME') && <th style={{padding: '10px'}}>Mission Name</th>}
+            {selectedCols.includes('SPACECRAFT_NAME') && <th style={{padding: '10px'}}>Spacecraft</th>}
+            {selectedCols.includes('SITE_NAME') && <th style={{padding: '10px'}}>Launch Site</th>}
+            {selectedCols.includes('DESTINATION') && <th style={{padding: '10px'}}>Destination</th>}
+            {selectedCols.includes('AGENCY_NAME') && <th style={{padding: '10px'}}>Agency Name</th>}
+            {selectedCols.includes('ROLE') && <th style={{padding: '10px'}}>Agency's Role</th>}
+            {selectedCols.includes('LAUNCH_DATE') && <th style={{padding: '10px'}}>Launch Date</th>}
             <th style={{padding: '10px'}}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {missions.map((row, i) => (
             <tr key={i}>
-              <td style={{padding: '8px'}}>{row[0]}</td>
-              <td style={{padding: '8px'}}>{row[1]}</td>
-              <td style={{padding: '8px'}}>{row[2]}</td>
-              <td style={{padding: '8px'}}>{row[3]}</td>
-              <td style={{padding: '8px'}}>{row[4]}</td>
-              <td style={{padding: '8px'}}>{row[5]}</td>
-              <td style={{padding: '8px'}}>{row[6]}</td>
-              <td style={{padding: '8px'}}>{row[7]}</td>
+              {selectedCols.includes('MISSION_ID') && <td style={{padding: '8px'}}>{row[0]}</td>}
+              {selectedCols.includes('MISSION_NAME') && <td style={{padding: '8px'}}>{row[1]}</td>}
+              {selectedCols.includes('SPACECRAFT_NAME') && <td style={{padding: '8px'}}>{row[2]}</td>}
+              {selectedCols.includes('SITE_NAME') && <td style={{padding: '8px'}}>{row[3]}</td>}
+              {selectedCols.includes('DESTINATION') && <td style={{padding: '8px'}}>{row[4]}</td>}
+              {selectedCols.includes('AGENCY_NAME') && <td style={{padding: '8px'}}>{row[5]}</td>}
+              {selectedCols.includes('ROLE') && <td style={{padding: '8px'}}>{row[6]}</td>}
+              {selectedCols.includes('LAUNCH_DATE') && <td style={{padding: '8px'}}>{row[7]}</td>}
               <td style={{padding: '8px'}}>
                 <button onClick={() => handleShowEditForm(row)} style={{marginBottom: '4px'}}>
                   Edit
