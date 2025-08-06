@@ -49,7 +49,6 @@ function AstronautTable() {
         ))}
       </div>
           
-
       <table border="1" style={{borderCollapse: 'collapse', width: '100%'}}>
         <thead>
           <tr style={{backgroundColor: '#f0f0f0'}}>

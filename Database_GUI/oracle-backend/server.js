@@ -103,6 +103,38 @@ app.get('/assignments', async (req, res) => {
   }
 });
 
+// Get mission assignments based on agencies - for JOIN query
+app.get('/assignments/by-agency/:agency_id', async (req, res) => {
+  let conn;
+
+  try {
+    const { agency_id } = req.params;
+    conn = await oracledb.getConnection(dbConfig);
+    
+    const result = await conn.execute(`
+      SELECT DISTINCT a.astronaut_name, m.mission_name
+      FROM Astronaut a, AssignedTo at, Mission m, ParticipateIn p
+      WHERE a.astronaut_id = at.astronaut_id AND
+      at.mission_id = m.mission_id AND
+      m.mission_id = p.mission_id AND
+      p.agency_id = :agency_id
+      ORDER BY a.astronaut_name, m.mission_name
+    `, {
+      agency_id: parseInt(agency_id)
+    });
+
+    const columns = [
+      'Astronaut', 'Mission'
+    ];
+    
+    res.json({columns, rows: result.rows});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
 // Filter entries of MissionLog by mission_id per user specification, else gets all mission log entries
 app.get('/mission-logs', async (req, res) => {
   const { mission_id } = req.query;
@@ -134,6 +166,31 @@ app.get('/mission-logs', async (req, res) => {
       'Mission ID', 'Mission Name', 'Log Date', 'Entry Type', 'Status', 'Description'
     ];
 
+    res.json({columns, rows: result.rows});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
+// Get agencies
+app.get('/agencies', async (req, res) => {
+  let conn;
+
+  try {
+    conn = await oracledb.getConnection(dbConfig);
+    
+    const result = await conn.execute(`
+      SELECT agency_id, agency_name, acronym
+      FROM Agency
+      ORDER BY agency_id
+    `);
+
+    const columns = [
+      'Agency ID', 'Agency Name', 'Acronym'
+    ];
+    
     res.json({columns, rows: result.rows});
   } catch (err) {
     res.status(500).json({ error: err.message });
