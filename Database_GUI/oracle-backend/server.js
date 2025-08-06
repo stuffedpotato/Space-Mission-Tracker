@@ -20,9 +20,11 @@ app.get('/test', (req, res) => {
 // Get all missions (return as arrays to match frontend expectations)
 app.get('/missions', async (req, res) => {
   let conn;
+
   try {
-    // Query modified to include missions where agency is NULL.
     conn = await oracledb.getConnection(dbConfig);
+
+    // Query modified to include missions where agency is NULL.
     const result = await conn.execute(`
       SELECT m.mission_id, m.mission_name, m.spacecraft_name, 
        l.site_name, cb.name AS destination,
@@ -37,8 +39,7 @@ app.get('/missions', async (req, res) => {
     `);
 
     const columns = [
-      'MISSION_ID', 'MISSION_NAME', 'SPACECRAFT_NAME',
-      'SITE_NAME', 'DESTINATION', 'AGENCY_NAME', 'ROLE', 'LAUNCH_DATE'
+      'Mission ID', 'Mission Name', 'Spacecraft', 'Launch Site', 'Destination', 'Agency Name', 'Agency\'s Role', 'Launch Date'
     ];
 
     // Return raw rows array to match frontend format
@@ -53,8 +54,10 @@ app.get('/missions', async (req, res) => {
 // Get all astronauts
 app.get('/astronauts', async (req, res) => {
   let conn;
+
   try {
     conn = await oracledb.getConnection(dbConfig);
+
     const result = await conn.execute(`
       SELECT astronaut_id, astronaut_name, nationality, 
              TO_CHAR(dob, 'YYYY-MM-DD') as date_of_birth
@@ -62,14 +65,11 @@ app.get('/astronauts', async (req, res) => {
       ORDER BY astronaut_id
     `);
 
-    const astronauts = result.rows.map(row => ({
-      astronaut_id: row[0],
-      name: row[1],
-      nationality: row[2],
-      date_of_birth: row[3]
-    }));
+    const columns = [
+      'ID', 'Name', 'Nationality', 'Date of Birth'
+    ];
 
-    res.json(astronauts);
+    res.json({columns, rows: result.rows});
   } catch (err) {
     res.status(500).json({ error: err.message });
   } finally {
@@ -80,8 +80,10 @@ app.get('/astronauts', async (req, res) => {
 // Get mission assignments
 app.get('/assignments', async (req, res) => {
   let conn;
+
   try {
     conn = await oracledb.getConnection(dbConfig);
+
     const result = await conn.execute(`
       SELECT a.astronaut_name, m.mission_name
       FROM Astronaut a, Mission m, AssignedTo at
@@ -89,12 +91,11 @@ app.get('/assignments', async (req, res) => {
       ORDER BY m.mission_id
     `);
 
-    const assignments = result.rows.map(row => ({
-      astronaut: row[0],
-      mission: row[1]
-    }));
+    const columns = [
+      'Astronaut', 'Mission'
+    ];
 
-    res.json(assignments);
+    res.json({columns, rows: result.rows});
   } catch (err) {
     res.status(500).json({ error: err.message });
   } finally {
@@ -106,7 +107,6 @@ app.get('/assignments', async (req, res) => {
 app.get('/mission-logs', async (req, res) => {
   const { mission_id } = req.query;
   let conn;
-
   let whereClause = 'WHERE ml.mission_id = m.mission_id';
   let binds = {};
 
@@ -130,7 +130,11 @@ app.get('/mission-logs', async (req, res) => {
       binds
     );
 
-    res.json(result.rows);
+    const columns = [
+      'Mission ID', 'Mission Name', 'Log Date', 'Entry Type', 'Status', 'Description'
+    ];
+
+    res.json({columns, rows: result.rows});
   } catch (err) {
     res.status(500).json({ error: err.message });
   } finally {

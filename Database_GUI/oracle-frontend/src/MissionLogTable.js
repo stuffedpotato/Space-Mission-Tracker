@@ -3,6 +3,8 @@ import axios from 'axios';
 
 function MissionLogTable() {
   const [missionLogs, setMissionLogs] = useState([]);
+  const [columns, setColumns] = useState([]);
+  const [selectedCols, setSelectedCols] = useState([]);
   const [selectedMissionId, setSelectedMissionId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,7 +23,9 @@ function MissionLogTable() {
       params: selectedMissionId ? { mission_id: selectedMissionId } : {}
     })
       .then(res => {
-        setMissionLogs(res.data);
+        setColumns(res.data.columns);
+        setSelectedCols(res.data.columns);
+        setMissionLogs(res.data.rows);
         setLoading(false);
       })
       .catch(err => {
@@ -141,27 +145,46 @@ function MissionLogTable() {
         />
       </div>
 
+      <div style={{ marginBottom: '10px' }}>
+        {columns.map(col => (
+          <label key={col} style={{ marginRight: '10px' }}>
+            <input
+              type="checkbox"
+              checked={selectedCols.includes(col)}
+              onChange={() => {
+                if (selectedCols.includes(col)) {
+                  setSelectedCols(prev => prev.filter(c => c !== col));
+                } else {
+                  setSelectedCols(prev => [...prev, col]);
+                }
+              }}
+            />
+            {col}
+          </label>
+        ))}
+      </div>
+
       <table border="1" style={{borderCollapse: 'collapse', width: '100%'}}>
         <thead>
           <tr style={{backgroundColor: '#f0f0f0'}}>
-            <th style={{padding: '10px'}}>Mission ID</th>
-            <th style={{padding: '10px'}}>Mission Name</th>
-            <th style={{padding: '10px'}}>Log Date</th>
-            <th style={{padding: '10px'}}>Entry Type</th>
-            <th style={{padding: '10px'}}>Status</th>
-            <th style={{padding: '10px'}}>Description</th>
+            {selectedCols.includes('Mission ID') && <th style={{padding: '10px'}}>Mission ID</th>}
+            {selectedCols.includes('Mission Name') && <th style={{padding: '10px'}}>Mission Name</th>}
+            {selectedCols.includes('Log Date') && <th style={{padding: '10px'}}>Log Date</th>}
+            {selectedCols.includes('Entry Type') && <th style={{padding: '10px'}}>Entry Type</th>}
+            {selectedCols.includes('Status') && <th style={{padding: '10px'}}>Status</th>}
+            {selectedCols.includes('Description') && <th style={{padding: '10px'}}>Description</th>}
             <th style={{padding: '10px'}}>Action</th>
           </tr>
         </thead>
         <tbody>
           {missionLogs.map((row, i) => (
             <tr key={i}>
-              <td style={{padding: '8px'}}>{row[0]}</td>
-              <td style={{padding: '8px'}}>{row[1]}</td>
-              <td style={{padding: '8px'}}>{row[2]}</td>
-              <td style={{padding: '8px'}}>{row[3]}</td>
-              <td style={{padding: '8px'}}>{row[4]}</td>
-              <td style={{padding: '8px'}}>{row[5]}</td>
+              {selectedCols.includes('Mission ID') && <td style={{padding: '8px'}}>{row[0]}</td>}
+              {selectedCols.includes('Mission Name') && <td style={{padding: '8px'}}>{row[1]}</td>}
+              {selectedCols.includes('Log Date') && <td style={{padding: '8px'}}>{row[2]}</td>}
+              {selectedCols.includes('Entry Type') && <td style={{padding: '8px'}}>{row[3]}</td>}
+              {selectedCols.includes('Status') && <td style={{padding: '8px'}}>{row[4]}</td>}
+              {selectedCols.includes('Description') && <td style={{padding: '8px'}}>{row[5]}</td>}
               <td style={{padding: '8px'}}>
                 <button onClick={() => handleDelete(row[0], row[2])}>
                   Delete

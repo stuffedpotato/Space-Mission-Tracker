@@ -295,28 +295,28 @@ function MissionTable() {
       <table border="1" style={{borderCollapse: 'collapse', width: '100%'}}>
         <thead>
           <tr style={{backgroundColor: '#f0f0f0'}}>
-            {selectedCols.includes('MISSION_ID') && <th style={{padding: '10px'}}>Mission ID</th>}
-            {selectedCols.includes('MISSION_NAME') && <th style={{padding: '10px'}}>Mission Name</th>}
-            {selectedCols.includes('SPACECRAFT_NAME') && <th style={{padding: '10px'}}>Spacecraft</th>}
-            {selectedCols.includes('SITE_NAME') && <th style={{padding: '10px'}}>Launch Site</th>}
-            {selectedCols.includes('DESTINATION') && <th style={{padding: '10px'}}>Destination</th>}
-            {selectedCols.includes('AGENCY_NAME') && <th style={{padding: '10px'}}>Agency Name</th>}
-            {selectedCols.includes('ROLE') && <th style={{padding: '10px'}}>Agency's Role</th>}
-            {selectedCols.includes('LAUNCH_DATE') && <th style={{padding: '10px'}}>Launch Date</th>}
+            {selectedCols.includes('Mission ID') && <th style={{padding: '10px'}}>Mission ID</th>}
+            {selectedCols.includes('Mission Name') && <th style={{padding: '10px'}}>Mission Name</th>}
+            {selectedCols.includes('Spacecraft') && <th style={{padding: '10px'}}>Spacecraft</th>}
+            {selectedCols.includes('Launch Site') && <th style={{padding: '10px'}}>Launch Site</th>}
+            {selectedCols.includes('Destination') && <th style={{padding: '10px'}}>Destination</th>}
+            {selectedCols.includes('Agency Name') && <th style={{padding: '10px'}}>Agency Name</th>}
+            {selectedCols.includes('Agency\'s Role') && <th style={{padding: '10px'}}>Agency's Role</th>}
+            {selectedCols.includes('Launch Date') && <th style={{padding: '10px'}}>Launch Date</th>}
             <th style={{padding: '10px'}}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {missions.map((row, i) => (
             <tr key={i}>
-              {selectedCols.includes('MISSION_ID') && <td style={{padding: '8px'}}>{row[0]}</td>}
-              {selectedCols.includes('MISSION_NAME') && <td style={{padding: '8px'}}>{row[1]}</td>}
-              {selectedCols.includes('SPACECRAFT_NAME') && <td style={{padding: '8px'}}>{row[2]}</td>}
-              {selectedCols.includes('SITE_NAME') && <td style={{padding: '8px'}}>{row[3]}</td>}
-              {selectedCols.includes('DESTINATION') && <td style={{padding: '8px'}}>{row[4]}</td>}
-              {selectedCols.includes('AGENCY_NAME') && <td style={{padding: '8px'}}>{row[5]}</td>}
-              {selectedCols.includes('ROLE') && <td style={{padding: '8px'}}>{row[6]}</td>}
-              {selectedCols.includes('LAUNCH_DATE') && <td style={{padding: '8px'}}>{row[7]}</td>}
+              {selectedCols.includes('Mission ID') && <td style={{padding: '8px'}}>{row[0]}</td>}
+              {selectedCols.includes('Mission Name') && <td style={{padding: '8px'}}>{row[1]}</td>}
+              {selectedCols.includes('Spacecraft') && <td style={{padding: '8px'}}>{row[2]}</td>}
+              {selectedCols.includes('Launch Site') && <td style={{padding: '8px'}}>{row[3]}</td>}
+              {selectedCols.includes('Destination') && <td style={{padding: '8px'}}>{row[4]}</td>}
+              {selectedCols.includes('Agency Name') && <td style={{padding: '8px'}}>{row[5]}</td>}
+              {selectedCols.includes('Agency\'s Role') && <td style={{padding: '8px'}}>{row[6]}</td>}
+              {selectedCols.includes('Launch Date') && <td style={{padding: '8px'}}>{row[7]}</td>}
               <td style={{padding: '8px'}}>
                 <button onClick={() => handleShowEditForm(row)} style={{marginBottom: '4px'}}>
                   Edit
