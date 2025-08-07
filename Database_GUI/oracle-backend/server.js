@@ -519,9 +519,8 @@ app.get('/missions/group-by', async (req, res) => {
              COUNT(*) as total_missions,
              MIN(TO_CHAR(m.launch_date, 'YYYY-MM-DD')) as earliest_mission,
              MAX(TO_CHAR(m.launch_date, 'YYYY-MM-DD')) as latest_mission
-      FROM Mission m
-      JOIN ParticipateIn p ON m.mission_id = p.mission_id
-      JOIN Agency a ON p.agency_id = a.agency_id
+      FROM Mission m, ParticipateIn p, Agency a
+      WHERE m.mission_id = p.mission_id AND p.agency_id = a.agency_id
       GROUP BY a.agency_name
       ORDER BY total_missions DESC
     `);
@@ -538,7 +537,7 @@ app.get('/missions/group-by', async (req, res) => {
   }
 });
 
-// NESTED: Mars missions only
+// NESTED with GROUP BY: Mars missions only
 app.get('/missions/nested', async (req, res) => {
   let conn;
 
@@ -546,21 +545,21 @@ app.get('/missions/nested', async (req, res) => {
     conn = await oracledb.getConnection(dbConfig);
 
     const result = await conn.execute(`
-      SELECT m.mission_id, m.mission_name, m.spacecraft_name, 
-             l.site_name, cb.name AS destination,
+      SELECT data.mission_id, data.mission_name, data.spacecraft_name, 
+             data.site_name, data.destination,
              a.agency_name, p.role,
-             TO_CHAR(m.launch_date, 'YYYY-MM-DD') AS launch_date
-      FROM Mission m
-      JOIN LaunchSite l ON m.site_id = l.site_id
-      JOIN CelestialBody cb ON m.body_id = cb.body_id
-      LEFT JOIN ParticipateIn p ON m.mission_id = p.mission_id
+             TO_CHAR(data.launch_date, 'YYYY-MM-DD') AS launch_date
+      FROM (SELECT m.mission_id, m.mission_name, m.spacecraft_name,
+              l.site_name, cb.name AS destination, m.launch_date
+            FROM Mission m, LaunchSite l, CelestialBody cb
+            WHERE m.site_id = l.site_id
+            AND m.body_id = cb.body_id
+            AND LOWER(cb.name) LIKE '%mars%'
+            GROUP BY m.mission_id, m.mission_name, m.spacecraft_name, 
+            l.site_name, cb.name, m.launch_date) data
+      LEFT JOIN ParticipateIn p ON data.mission_id = p.mission_id
       LEFT JOIN Agency a ON p.agency_id = a.agency_id
-      WHERE cb.name IN (
-        SELECT DISTINCT cb2.name 
-        FROM CelestialBody cb2 
-        WHERE LOWER(cb2.name) LIKE '%mars%'
-      )
-      ORDER BY m.launch_date DESC
+      ORDER BY data.launch_date DESC
     `);
 
     const columns = [
@@ -569,6 +568,7 @@ app.get('/missions/nested', async (req, res) => {
 
     res.json({columns, rows: result.rows});
   } catch (err) {
+    console.error(err); 
     res.status(500).json({ error: err.message });
   } finally {
     if (conn) await conn.close();
@@ -585,11 +585,9 @@ app.get('/astronauts/division', async (req, res) => {
     const result = await conn.execute(`
       SELECT DISTINCT a.astronaut_id, a.astronaut_name, a.nationality, 
              TO_CHAR(a.dob, 'YYYY-MM-DD') as date_of_birth
-      FROM Astronaut a
-      JOIN AssignedTo at ON a.astronaut_id = at.astronaut_id
-      JOIN Mission m ON at.mission_id = m.mission_id
-      JOIN CelestialBody cb ON m.body_id = cb.body_id
-      WHERE LOWER(cb.name) LIKE '%mars%'
+      FROM Astronaut a, AssignedTo at, Mission m, CelestialBody cb
+      WHERE a.astronaut_id = at.astronaut_id AND at.mission_id = m.mission_id AND m.body_id = cb.body_id
+      AND LOWER(cb.name) LIKE '%mars%'
       ORDER BY a.astronaut_name
     `);
 
@@ -614,10 +612,10 @@ app.get('/assignments/aggregation-having', async (req, res) => {
 
     const result = await conn.execute(`
       SELECT a.astronaut_name, COUNT(at.mission_id) as total_assignments
-      FROM Astronaut a
-      JOIN AssignedTo at ON a.astronaut_id = at.astronaut_id
+      FROM Astronaut a, AssignedTo at
+      WHERE a.astronaut_id = at.astronaut_id
       GROUP BY a.astronaut_id, a.astronaut_name
-      HAVING COUNT(at.mission_id) >= 2
+      HAVING COUNT(at.mission_id) >= 3
       ORDER BY total_assignments DESC, a.astronaut_name
     `);
 
