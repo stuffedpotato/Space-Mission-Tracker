@@ -7,25 +7,40 @@ function AssignmentTable() {
   const [selectedCols, setSelectedCols] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Additional states for Agency Filter - for JOIN query
+  const [queryMode, setQueryMode] = useState('normal');
   const [agencies, setAgencies] = useState([]);
   const [selectedAgency, setSelectedAgency] = useState('');
 
-  useEffect(() => {
-    axios.get('/assignments')
-      .then(res => {
-        setColumns(res.data.columns);
-        setSelectedCols(res.data.columns);
-        setAssignments(res.data.rows);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setError(err.message);
-        setLoading(false);
-      });
+  const queryOptions = [
+    { value: 'normal', label: 'All Assignments' },
+    { value: 'aggregation-having', label: 'Astronauts with 3+ Assignments' }
+  ];
+
+  const loadData = async (mode = 'normal') => {
+    setLoading(true);
+    try {
+      let endpoint = '/assignments';
+      if (mode === 'aggregation-having') {
+        endpoint = '/assignments/aggregation-having';
+      }
       
+      const res = await axios.get(endpoint);
+      setColumns(res.data.columns);
+      setSelectedCols(res.data.columns);
+      setAssignments(res.data.rows);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData(queryMode);
+  }, [queryMode]);
+
+  useEffect(() => {
     axios.get('/agencies')
       .then(res => 
         setAgencies(res.data.rows)
@@ -52,26 +67,52 @@ function AssignmentTable() {
   if (loading) return <div>Loading assignments...</div>;
   if (error) return <div>Error: {error}</div>;
 
+  const getTitle = () => {
+    const option = queryOptions.find(opt => opt.value === queryMode);
+    return `📋 ${option ? option.label : 'Mission Assignments'}`;
+  };
+
+  const isNormalMode = queryMode === 'normal';
+
   return (
     <div>
-      <h2>📋 Mission Assignments</h2>
+      <h2>{getTitle()}</h2>
 
-      <div style={{ marginBottom: '15px' }}>
-        <select
-          value={selectedAgency}
-          onChange={(e) => setSelectedAgency(e.target.value)}
+      <div style={{ marginBottom: '10px' }}>
+        <label style={{ marginRight: '10px', fontWeight: 'bold' }}>
+          View Mode:
+        </label>
+        <select 
+          value={queryMode} 
+          onChange={(e) => setQueryMode(e.target.value)}
+          style={{ marginBottom: '10px' }}
         >
-          <option value="">Select Agency ID</option>
-          {agencies.map(agency => (
-            <option key={agency[0]} value={agency[0]}>
-              {agency[0]} - {agency[1]}
+          {queryOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
             </option>
           ))}
         </select>
-        <button onClick={filterByAgency} style={{ marginLeft: '10px' }}>
-          Filter by Agency
-        </button>
       </div>
+
+      {isNormalMode && (
+        <div style={{ marginBottom: '15px' }}>
+          <select
+            value={selectedAgency}
+            onChange={(e) => setSelectedAgency(e.target.value)}
+          >
+            <option value="">Select Agency ID</option>
+            {agencies.map(agency => (
+              <option key={agency[0]} value={agency[0]}>
+                {agency[0]} - {agency[1]}
+              </option>
+            ))}
+          </select>
+          <button onClick={filterByAgency} style={{ marginLeft: '10px' }}>
+            Filter by Agency
+          </button>
+        </div>
+      )}
 
       <div style={{ marginBottom: '10px' }}>
         {columns.map(col => (
@@ -97,6 +138,8 @@ function AssignmentTable() {
           <tr style={{backgroundColor: '#f0f0f0'}}>
           {selectedCols.includes('Astronaut') && <th style={{padding: '10px'}}>Astronaut</th>}
           {selectedCols.includes('Mission') && <th style={{padding: '10px'}}>Mission</th>}
+          {selectedCols.includes('Astronaut Name') && <th style={{padding: '10px'}}>Astronaut Name</th>}
+          {selectedCols.includes('Total Assignments') && <th style={{padding: '10px'}}>Total Assignments</th>}
           </tr>
         </thead>
         <tbody>
@@ -104,6 +147,8 @@ function AssignmentTable() {
             <tr key={i}>
               {selectedCols.includes('Astronaut') && <td style={{padding: '8px'}}>{assignment[0]}</td>}
               {selectedCols.includes('Mission') && <td style={{padding: '8px'}}>{assignment[1]}</td>}
+              {selectedCols.includes('Astronaut Name') && <td style={{padding: '8px'}}>{assignment[0]}</td>}
+              {selectedCols.includes('Total Assignments') && <td style={{padding: '8px'}}>{assignment[1]}</td>}
             </tr>
           ))}
         </tbody>

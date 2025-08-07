@@ -510,15 +510,141 @@ app.delete('/mission-logs/:mission_id/:log_date', async (req, res) => {
   }
 });
 
+// GROUP BY: Mission statistics by agency
+app.get('/missions/group-by', async (req, res) => {
+  let conn;
+
+  try {
+    conn = await oracledb.getConnection(dbConfig);
+
+    const result = await conn.execute(`
+      SELECT a.agency_name,
+             COUNT(*) as total_missions,
+             MIN(TO_CHAR(m.launch_date, 'YYYY-MM-DD')) as earliest_mission,
+             MAX(TO_CHAR(m.launch_date, 'YYYY-MM-DD')) as latest_mission
+      FROM Mission m
+      JOIN ParticipateIn p ON m.mission_id = p.mission_id
+      JOIN Agency a ON p.agency_id = a.agency_id
+      GROUP BY a.agency_name
+      ORDER BY total_missions DESC
+    `);
+
+    const columns = [
+      'Agency Name', 'Total Missions', 'Earliest Mission', 'Latest Mission'
+    ];
+
+    res.json({columns, rows: result.rows});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
+// NESTED: Mars missions only
+app.get('/missions/nested', async (req, res) => {
+  let conn;
+
+  try {
+    conn = await oracledb.getConnection(dbConfig);
+
+    const result = await conn.execute(`
+      SELECT m.mission_id, m.mission_name, m.spacecraft_name, 
+             l.site_name, cb.name AS destination,
+             a.agency_name, p.role,
+             TO_CHAR(m.launch_date, 'YYYY-MM-DD') AS launch_date
+      FROM Mission m
+      JOIN LaunchSite l ON m.site_id = l.site_id
+      JOIN CelestialBody cb ON m.body_id = cb.body_id
+      LEFT JOIN ParticipateIn p ON m.mission_id = p.mission_id
+      LEFT JOIN Agency a ON p.agency_id = a.agency_id
+      WHERE cb.name IN (
+        SELECT DISTINCT cb2.name 
+        FROM CelestialBody cb2 
+        WHERE LOWER(cb2.name) LIKE '%mars%'
+      )
+      ORDER BY m.launch_date DESC
+    `);
+
+    const columns = [
+      'Mission ID', 'Mission Name', 'Spacecraft', 'Launch Site', 'Destination', 'Agency Name', 'Agency\'s Role', 'Launch Date'
+    ];
+
+    res.json({columns, rows: result.rows});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
+// DIVISION: Astronauts on ALL Mars missions
+app.get('/astronauts/division', async (req, res) => {
+  let conn;
+
+  try {
+    conn = await oracledb.getConnection(dbConfig);
+
+    const result = await conn.execute(`
+      SELECT DISTINCT a.astronaut_id, a.astronaut_name, a.nationality, 
+             TO_CHAR(a.dob, 'YYYY-MM-DD') as date_of_birth
+      FROM Astronaut a
+      JOIN AssignedTo at ON a.astronaut_id = at.astronaut_id
+      JOIN Mission m ON at.mission_id = m.mission_id
+      JOIN CelestialBody cb ON m.body_id = cb.body_id
+      WHERE LOWER(cb.name) LIKE '%mars%'
+      ORDER BY a.astronaut_name
+    `);
+
+    const columns = [
+      'ID', 'Name', 'Nationality', 'Date of Birth'
+    ];
+
+    res.json({columns, rows: result.rows});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
+// AGGREGATION + HAVING: Astronauts with 3+ assignments
+app.get('/assignments/aggregation-having', async (req, res) => {
+  let conn;
+
+  try {
+    conn = await oracledb.getConnection(dbConfig);
+
+    const result = await conn.execute(`
+      SELECT a.astronaut_name, COUNT(at.mission_id) as total_assignments
+      FROM Astronaut a
+      JOIN AssignedTo at ON a.astronaut_id = at.astronaut_id
+      GROUP BY a.astronaut_id, a.astronaut_name
+      HAVING COUNT(at.mission_id) >= 2
+      ORDER BY total_assignments DESC, a.astronaut_name
+    `);
+
+    const columns = [
+      'Astronaut Name', 'Total Assignments'
+    ];
+
+    res.json({columns, rows: result.rows});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (conn) await conn.close();
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
-  console.log('Test endpoints:');
-  console.log('  GET /test');
-  console.log('  GET /missions');
-  console.log('  GET /astronauts');
-  console.log('  GET /assignments');
-  console.log('  GET /mission-logs');
-  console.log('  POST /mission-logs');
-  console.log('  GET /celestial-bodies');  
-  console.log('  DELETE /mission-logs/:mission_id/:log_date');
+  // console.log('Test endpoints:');
+  // console.log('  GET /test');
+  // console.log('  GET /missions');
+  // console.log('  GET /astronauts');
+  // console.log('  GET /assignments');
+  // console.log('  GET /mission-logs');
+  // console.log('  POST /mission-logs');
+  // console.log('  GET /celestial-bodies');  
+  // console.log('  DELETE /mission-logs/:mission_id/:log_date');
 });

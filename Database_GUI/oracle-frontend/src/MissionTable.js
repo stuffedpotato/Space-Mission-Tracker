@@ -10,6 +10,7 @@ function MissionTable() {
   const [showForm, setShowForm] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [queryMode, setQueryMode] = useState('normal');
   const [formData, setFormData] = useState({
     mission_id: '',
     mission_name: '',
@@ -39,6 +40,12 @@ function MissionTable() {
     role: ''
   };
 
+  const queryOptions = [
+    { value: 'normal', label: 'All Missions' },
+    { value: 'group-by', label: 'Mission Count by Agency' },
+    { value: 'nested', label: 'Mars Missions Only' }
+  ];
+
   const handleShowAddForm = () => {
     setFormData(emptyFormData);
     setEditMode(false);
@@ -54,11 +61,7 @@ function MissionTable() {
       spacecraft_id: '',
       site_id: '',
       body_id: '',
-      // start_date: '',
-      // end_date: '',
       launch_date: row[7],
-      // agency_id: '',
-      // role: row[6]
     });
     setEditMode(true);
     setEditingId(row[0]);
@@ -72,22 +75,32 @@ function MissionTable() {
     setFormData(emptyFormData);
   };
 
-  useEffect(() => {
-    axios.get('/missions')
-      .then(res => {
-        setColumns(res.data.columns);
-        setSelectedCols(res.data.columns);
-        setMissions(res.data.rows);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-  
+  const loadData = async (mode = 'normal') => {
+    setLoading(true);
+    try {
+      let endpoint = '/missions';
+      if (mode === 'group-by') {
+        endpoint = '/missions/group-by';
+      } else if (mode === 'nested') {
+        endpoint = '/missions/nested';
+      }
+      
+      const res = await axios.get(endpoint);
+      setColumns(res.data.columns);
+      setSelectedCols(res.data.columns);
+      setMissions(res.data.rows);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    loadData(queryMode);
+  }, [queryMode]);
+  
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -106,11 +119,8 @@ function MissionTable() {
         await axios.post('/missions', formData);
       }
       
-      // Refresh the data
-      const res = await axios.get('/missions');
-      setMissions(res.data);
+      await loadData(queryMode);
       
-      // Reset form and close
       handleCancelForm();
     } catch (err) {
       console.error('Submit error:', err);
@@ -128,8 +138,7 @@ function MissionTable() {
   const handleDelete = async (missionId) => {
     try {
       await axios.delete(`/missions/${missionId}`);
-      const res = await axios.get('/missions');
-      setMissions(res.data);
+      await loadData(queryMode);
     } catch (err) {
       setError(err.message);
     }
@@ -144,17 +153,42 @@ function MissionTable() {
       </pre>
     );
   }
-  
+
+  const getTitle = () => {
+    const option = queryOptions.find(opt => opt.value === queryMode);
+    return `🚀 ${option ? option.label : 'Space Missions'}`;
+  };
+
+  const isNormalMode = queryMode === 'normal';
 
   return (
     <div>
-      <h2>🚀 Space Missions</h2>
+      <h2>{getTitle()}</h2>
 
-      <button onClick={handleShowAddForm} style={{marginBottom: '10px'}}>
-        + Add Mission
-      </button>
+      <div style={{ marginBottom: '10px' }}>
+        <label style={{ marginRight: '10px', fontWeight: 'bold' }}>
+          View Mode:
+        </label>
+        <select 
+          value={queryMode} 
+          onChange={(e) => setQueryMode(e.target.value)}
+          style={{ marginBottom: '10px' }}
+        >
+          {queryOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      {showForm && (
+      {isNormalMode && (
+        <button onClick={handleShowAddForm} style={{marginBottom: '10px'}}>
+          + Add Mission
+        </button>
+      )}
+
+      {showForm && isNormalMode && (
         <form onSubmit={handleSubmit}>
           {editMode ? (
             <input
@@ -295,36 +329,33 @@ function MissionTable() {
       <table border="1" style={{borderCollapse: 'collapse', width: '100%'}}>
         <thead>
           <tr style={{backgroundColor: '#f0f0f0'}}>
-            {selectedCols.includes('Mission ID') && <th style={{padding: '10px'}}>Mission ID</th>}
-            {selectedCols.includes('Mission Name') && <th style={{padding: '10px'}}>Mission Name</th>}
-            {selectedCols.includes('Spacecraft') && <th style={{padding: '10px'}}>Spacecraft</th>}
-            {selectedCols.includes('Launch Site') && <th style={{padding: '10px'}}>Launch Site</th>}
-            {selectedCols.includes('Destination') && <th style={{padding: '10px'}}>Destination</th>}
-            {selectedCols.includes('Agency Name') && <th style={{padding: '10px'}}>Agency Name</th>}
-            {selectedCols.includes('Agency\'s Role') && <th style={{padding: '10px'}}>Agency's Role</th>}
-            {selectedCols.includes('Launch Date') && <th style={{padding: '10px'}}>Launch Date</th>}
-            <th style={{padding: '10px'}}>Actions</th>
+            {selectedCols.map(col => (
+              <th key={col} style={{padding: '10px'}}>{col}</th>
+            ))}
+            {isNormalMode && <th style={{padding: '10px'}}>Actions</th>}
           </tr>
         </thead>
         <tbody>
           {missions.map((row, i) => (
             <tr key={i}>
-              {selectedCols.includes('Mission ID') && <td style={{padding: '8px'}}>{row[0]}</td>}
-              {selectedCols.includes('Mission Name') && <td style={{padding: '8px'}}>{row[1]}</td>}
-              {selectedCols.includes('Spacecraft') && <td style={{padding: '8px'}}>{row[2]}</td>}
-              {selectedCols.includes('Launch Site') && <td style={{padding: '8px'}}>{row[3]}</td>}
-              {selectedCols.includes('Destination') && <td style={{padding: '8px'}}>{row[4]}</td>}
-              {selectedCols.includes('Agency Name') && <td style={{padding: '8px'}}>{row[5]}</td>}
-              {selectedCols.includes('Agency\'s Role') && <td style={{padding: '8px'}}>{row[6]}</td>}
-              {selectedCols.includes('Launch Date') && <td style={{padding: '8px'}}>{row[7]}</td>}
-              <td style={{padding: '8px'}}>
-                <button onClick={() => handleShowEditForm(row)} style={{marginBottom: '4px'}}>
-                  Edit
-                </button>
-                <button onClick={() => handleDelete(row[0])}>
-                  Delete
-                </button>
-              </td>
+              {selectedCols.map((col, colIndex) => {
+                const columnIndex = columns.indexOf(col);
+                return (
+                  <td key={colIndex} style={{padding: '8px'}}>
+                    {row[columnIndex]}
+                  </td>
+                );
+              })}
+              {isNormalMode && (
+                <td style={{padding: '8px'}}>
+                  <button onClick={() => handleShowEditForm(row)} style={{marginRight: '5px'}}>
+                    Edit
+                  </button>
+                  <button onClick={() => handleDelete(row[0])}>
+                    Delete
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
