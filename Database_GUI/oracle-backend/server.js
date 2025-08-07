@@ -583,11 +583,16 @@ app.get('/astronauts/division', async (req, res) => {
     conn = await oracledb.getConnection(dbConfig);
 
     const result = await conn.execute(`
-      SELECT DISTINCT a.astronaut_id, a.astronaut_name, a.nationality, 
-             TO_CHAR(a.dob, 'YYYY-MM-DD') as date_of_birth
-      FROM Astronaut a, AssignedTo at, Mission m, CelestialBody cb
-      WHERE a.astronaut_id = at.astronaut_id AND at.mission_id = m.mission_id AND m.body_id = cb.body_id
-      AND LOWER(cb.name) LIKE '%mars%'
+      SELECT a.astronaut_id, a.astronaut_name, a.nationality, 
+      TO_CHAR(a.dob, 'YYYY-MM-DD') AS date_of_birth
+      FROM Astronaut a
+      WHERE NOT EXISTS (SELECT m.mission_id
+                        FROM Mission m, CelestialBody cb
+                        WHERE m.body_id = cb.body_id AND LOWER(cb.name) LIKE '%mars%'
+                        MINUS
+                        SELECT at.mission_id
+                        FROM AssignedTo at
+                        WHERE at.astronaut_id = a.astronaut_id)
       ORDER BY a.astronaut_name
     `);
 
@@ -597,6 +602,7 @@ app.get('/astronauts/division', async (req, res) => {
 
     res.json({columns, rows: result.rows});
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   } finally {
     if (conn) await conn.close();
