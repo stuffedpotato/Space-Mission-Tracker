@@ -412,10 +412,16 @@ INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES
 (5, 'M007');
 
 INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
-(4, 'M008');
+(1, 'M008');
+
+INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
+(2, 'M008');
 
 INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
 (3, 'M008');
+
+INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
+(4, 'M008');
 
 -- Insert values into TrainedIn
 INSERT INTO TrainedIn (astronaut_id, program_name, program_location) VALUES 
