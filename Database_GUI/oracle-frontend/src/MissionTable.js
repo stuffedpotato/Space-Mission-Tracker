@@ -108,7 +108,7 @@ function MissionTable() {
       
       // Refresh the data
       const res = await axios.get('/missions');
-      setMissions(res.data);
+      setMissions(res.data.rows);
       
       // Reset form and close
       handleCancelForm();
@@ -129,7 +129,7 @@ function MissionTable() {
     try {
       await axios.delete(`/missions/${missionId}`);
       const res = await axios.get('/missions');
-      setMissions(res.data);
+      setMissions(res.data.rows);
     } catch (err) {
       setError(err.message);
     }

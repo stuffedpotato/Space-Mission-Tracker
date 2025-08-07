@@ -24,7 +24,8 @@ app.get('/missions', async (req, res) => {
   try {
     conn = await oracledb.getConnection(dbConfig);
 
-    // Query modified to include missions where agency is NULL.
+    // Query modified to include missions where agency is NULL - joining how we learnt in class was making us lose missions
+    // that had no tuples in ParticipateIn. So we looked up LEFT JOIN which solved our problem!
     const result = await conn.execute(`
       SELECT m.mission_id, m.mission_name, m.spacecraft_name, 
        l.site_name, cb.name AS destination,
@@ -84,21 +85,17 @@ app.get('/celestial-bodies', async (req, res) => {
   try {
     conn = await oracledb.getConnection(dbConfig);
 
-    const result = await conn.execute(
-      `SELECT body_id, name, cb_type, has_atmosphere 
+    const result = await conn.execute(`
+      SELECT body_id, name, cb_type, has_atmosphere 
       FROM CelestialBody
-      ORDER BY body_id`
-    );
+      ORDER BY body_id
+    `);
 
-    
-    const bodies = result.rows.map(row => ({
-      body_id: row[0],
-      name: row[1],
-      cb_type: row[2],
-      has_atmosphere: row[3]
-    }));
+    const columns = [
+      'Celestial Body ID', 'Name', 'Type', 'Has Atmosphere?'
+    ];
 
-    res.json(bodies);
+    res.json({columns, rows: result.rows});
   } catch (err) {
     res.status(500).json({ error: err.message });
   } finally {

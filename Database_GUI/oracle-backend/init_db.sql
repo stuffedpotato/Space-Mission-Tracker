@@ -219,6 +219,9 @@ INSERT INTO CelestialBody (body_id, name, cb_type, has_atmosphere) VALUES
 INSERT INTO CelestialBody (body_id, name, cb_type, has_atmosphere) VALUES 
 ('CB005', '81P/Wild2', 'Comet', 0);
 
+INSERT INTO CelestialBody (body_id, name, cb_type, has_atmosphere) VALUES 
+('CB006', 'Mars', 'Planet', 1);
+
 -- Insert values into SpacecraftModel
 INSERT INTO SpacecraftModel (model_name, manufacturer, sc_type, crew_capacity, cargo_capacity_kg) VALUES 
 ('Command Module', 'North American Aviation', 'crew', 3, 0.00);
@@ -306,6 +309,15 @@ INSERT INTO Mission (mission_id, site_id, body_id, spacecraft_id, mission_name, 
 INSERT INTO Mission (mission_id, site_id, body_id, spacecraft_id, mission_name, start_date, end_date, launch_date) VALUES 
 ('M005', 'LS003', 'CB005', 'SC005', 'Stardust', TO_DATE('1999-02-07', 'YYYY-MM-DD'), TO_DATE('2006-01-15', 'YYYY-MM-DD'), TO_DATE('1999-02-07', 'YYYY-MM-DD'));
 
+INSERT INTO Mission (mission_id, site_id, body_id, spacecraft_id, mission_name, start_date, end_date, launch_date) VALUES 
+('M006', 'LS002', 'CB001', 'SC003', 'Chandrayaan', TO_DATE('2023-07-14', 'YYYY-MM-DD'), TO_DATE('2023-08-23', 'YYYY-MM-DD'), TO_DATE('2023-07-14', 'YYYY-MM-DD'));
+
+INSERT INTO Mission (mission_id, site_id, body_id, spacecraft_id, spacecraft_name, mission_name, start_date, end_date, launch_date) VALUES 
+('M007', 'LS003', 'CB006', 'SC003', 'Skywalker', 'Aurora', TO_DATE('2023-03-10', 'YYYY-MM-DD'), TO_DATE('2023-10-10', 'YYYY-MM-DD'), TO_DATE('2023-03-10', 'YYYY-MM-DD'));
+
+INSERT INTO Mission (mission_id, site_id, body_id, spacecraft_id, mission_name, start_date, end_date, launch_date) VALUES 
+('M008', 'LS001', 'CB006', 'SC003', 'Red Horizons', TO_DATE('2035-08-22', 'YYYY-MM-DD'), TO_DATE('2038-02-08', 'YYYY-MM-DD'), TO_DATE('2035-08-22', 'YYYY-MM-DD'));
+
 -- Insert values into MissionLog
 INSERT INTO MissionLog (log_date, mission_id, entry_type, status, description) VALUES 
 (TO_DATE('1969-07-16', 'YYYY-MM-DD'), 'M001', 'Launch', 'Success', 'Lift-off on Apollo 11');
@@ -345,6 +357,15 @@ INSERT INTO ParticipateIn (agency_id, mission_id, role) VALUES
 INSERT INTO ParticipateIn (agency_id, mission_id, role) VALUES 
 (1, 'M005', 'Lead');
 
+INSERT INTO ParticipateIn (agency_id, mission_id, role) VALUES 
+(4, 'M006', 'Lead');
+
+INSERT INTO ParticipateIn (agency_id, mission_id, role) VALUES 
+(2, 'M007', 'Lead');
+
+INSERT INTO ParticipateIn (agency_id, mission_id, role) VALUES 
+(4, 'M008', 'Lead');
+
 -- Insert values into Pilot
 INSERT INTO Pilot (astronaut_id, flight_hours) VALUES 
 (1, 2400.00);
@@ -371,6 +392,30 @@ INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES
 
 INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
 (5, 'M003');
+
+INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
+(1, 'M006');
+
+INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
+(2, 'M006');
+
+INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
+(3, 'M006');
+
+INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
+(1, 'M007');
+
+INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
+(4, 'M007');
+
+INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
+(5, 'M007');
+
+INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
+(4, 'M008');
+
+INSERT INTO AssignedTo (astronaut_id, mission_id) VALUES 
+(3, 'M008');
 
 -- Insert values into TrainedIn
 INSERT INTO TrainedIn (astronaut_id, program_name, program_location) VALUES 
