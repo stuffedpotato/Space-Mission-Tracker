@@ -15,11 +15,7 @@ function App() {
     { value: 'logs', label: 'Mission Logs', component: <MissionLogTable /> },
     { value: 'astronauts', label: 'Astronauts', component: <AstronautTable /> },
     { value: 'assignments', label: 'Assignments', component: <AssignmentTable /> },
-    { value: 'agency', label: 'Agency', component: <MissionLogTable /> },
-    { value: 'launchsites', label: 'Launchsites', component: <MissionLogTable /> },
     { value: 'celestialBodies', label: 'Celestial Body', component: <CelestialBodyTable /> },
-    { value: 'spacecraft', label: 'Spacecraft', component: <MissionLogTable /> },
-    { value: 'spacecraftModel', label: 'Spacecraft Model', component: <MissionLogTable /> }
   ];
 
   const containerStyle = {

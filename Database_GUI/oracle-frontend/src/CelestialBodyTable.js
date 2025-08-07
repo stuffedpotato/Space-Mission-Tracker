@@ -3,15 +3,17 @@ import { useEffect, useState } from 'react';
 
 function CelestialBodyTable() {
   const [bodies, setBodies] = useState([]);
-  const [columns, setColumns] = useState(['ID', 'Name', 'Type', 'Atmosphere']);
-  const [selectedCols, setSelectedCols] = useState(['ID', 'Name', 'Type', 'Atmosphere']);
+  const [columns, setColumns] = useState([]);
+  const [selectedCols, setSelectedCols] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     axios.get('/celestial-bodies')
       .then(res => {
-        setBodies(res.data);
+        setColumns(res.data.columns);
+        setSelectedCols(res.data.columns);
+        setBodies(res.data.rows);
         setLoading(false);
       })
       .catch(err => {
@@ -50,19 +52,19 @@ function CelestialBodyTable() {
       <table border="1" style={{borderCollapse: 'collapse', width: '100%'}}>
         <thead>
           <tr style={{backgroundColor: '#f0f0f0'}}>
-            {selectedCols.includes('ID') && <th style={{padding: '10px'}}>ID</th>}
+            {selectedCols.includes('Celestial Body ID') && <th style={{padding: '10px'}}>Celestial Body ID</th>}
             {selectedCols.includes('Name') && <th style={{padding: '10px'}}>Name</th>}
             {selectedCols.includes('Type') && <th style={{padding: '10px'}}>Type</th>}
-            {selectedCols.includes('Atmosphere') && <th style={{padding: '10px'}}>Atmosphere</th>}
+            {selectedCols.includes('Has Atmosphere?') && <th style={{padding: '10px'}}>Has Atmosphere?</th>}
           </tr>
         </thead>
         <tbody>
           {bodies.map((body, i) => (
             <tr key={i}>
-              {selectedCols.includes('ID') && <td style={{padding: '8px'}}>{body.body_id}</td>}
-              {selectedCols.includes('Name') && <td style={{padding: '8px'}}>{body.name}</td>}
-              {selectedCols.includes('Type') && <td style={{padding: '8px'}}>{body.cb_type}</td>}
-              {selectedCols.includes('Atmosphere') && <td style={{padding: '8px'}}>{body.has_atmosphere}</td>}
+              {selectedCols.includes('Celestial Body ID') && <td style={{padding: '8px'}}>{body[0]}</td>}
+              {selectedCols.includes('Name') && <td style={{padding: '8px'}}>{body[1]}</td>}
+              {selectedCols.includes('Type') && <td style={{padding: '8px'}}>{body[2]}</td>}
+              {selectedCols.includes('Has Atmosphere?') && <td style={{padding: '8px'}}>{body[3]}</td>}
             </tr>
           ))}
         </tbody>

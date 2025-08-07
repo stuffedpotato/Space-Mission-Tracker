@@ -138,7 +138,7 @@ function MissionTable() {
   const handleDelete = async (missionId) => {
     try {
       await axios.delete(`/missions/${missionId}`);
-      await loadData(queryMode);
+      await loadData(queryMode.rows);
     } catch (err) {
       setError(err.message);
     }
