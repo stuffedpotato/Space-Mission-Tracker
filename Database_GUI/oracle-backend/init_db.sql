@@ -441,3 +441,5 @@ INSERT INTO TrainedIn (astronaut_id, program_name, program_location) VALUES
 
 INSERT INTO TrainedIn (astronaut_id, program_name, program_location) VALUES 
 (3, 'Sample Collection', 'Grand Canyon, Arizona');
+
+DELETE FROM Mission WHERE mission_id = 'M007';
